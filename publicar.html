@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Publicar</title>
+
+<style>
+body { font-family: Arial; background:#f5f5f5; }
+
+.container {
+    max-width:600px;
+    margin:40px auto;
+    background:white;
+    padding:20px;
+    border-radius:10px;
+}
+
+.tag {
+    background:#1b8246;
+    color:white;
+    padding:5px 10px;
+    margin:3px;
+    border-radius:15px;
+    display:inline-block;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Publicar</h2>
+
+<form id="form">
+
+<input type="text" id="titulo" placeholder="Título" required>
+<textarea id="descripcion" placeholder="Descripción" required></textarea>
+
+<input type="file" id="fileInput">
+
+<img id="preview" style="width:100%;display:none;">
+
+<input type="text" id="tagInput" placeholder="Añadir tag">
+
+<div id="tags"></div>
+
+<button type="submit">Publicar</button>
+
+</form>
+
+</div>
+
+// [Solo el bloque de script de publicar.html, el resto se mantiene igual]
+<script type="module">
+    import { db, auth } from "./firebase.js";
+    import { collection, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    let base64="";
+    let tags=[];
+    let currentUserData = null;
+
+    // Verificar sesión y obtener datos del autor
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            window.location.href = "login.html";
+        } else {
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            if(userSnap.exists()) currentUserData = userSnap.data();
+        }
+    });
+
+    fileInput.onchange=()=>{
+        const reader=new FileReader();
+        reader.onload=e=>{
+            base64=e.target.result;
+            preview.src=base64;
+            preview.style.display="block";
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+    };
+
+    tagInput.addEventListener("keydown",(e)=>{
+        if(e.key==="Enter"){
+            e.preventDefault();
+            const t=tagInput.value.trim();
+            if(!t) return;
+            tags.push(t);
+            const span=document.createElement("span");
+            span.className="tag";
+            span.textContent=t;
+            document.getElementById("tags").appendChild(span);
+            tagInput.value="";
+        }
+    });
+
+    form.onsubmit=async(e)=>{
+        e.preventDefault();
+        if(!currentUserData) return alert("Cargando datos de usuario...");
+
+        await addDoc(collection(db,"proyectos"),{
+            titulo:titulo.value,
+            descripcion:descripcion.value,
+            imagen:base64,
+            nombre: currentUserData.nombre, // Nombre real del autor
+            userId: auth.currentUser.uid,   // UID real del autor
+            tags:tags,
+            likes:0,
+            likedBy:[],
+            createdAt: new Date() // Para ordenar por fecha después
+        });
+
+        window.location.href="inicio.html";
+    };
+</script>
+
+</body>
+</html>

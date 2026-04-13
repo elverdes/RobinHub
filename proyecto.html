@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Proyecto</title>
+</head>
+
+<body>
+
+<a href="inicio.html">← Volver</a>
+
+<h2 id="titulo"></h2>
+<img id="img" style="width:300px;">
+<p id="desc"></p>
+
+<div id="tags"></div>
+
+<button id="likeBtn"></button>
+
+<script type="module">
+
+import { db, auth } from "./firebase.js";
+import {
+doc, getDoc, updateDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+import { onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const id=new URLSearchParams(location.search).get("id");
+
+const ref=doc(db,"proyectos",id);
+const snap=await getDoc(ref);
+
+let data=snap.data();
+
+titulo.textContent=data.titulo;
+img.src=data.imagen;
+desc.textContent=data.descripcion;
+
+data.tags?.forEach(t=>{
+    const span=document.createElement("span");
+    span.textContent="#"+t;
+    tags.appendChild(span);
+});
+
+onAuthStateChanged(auth,(user)=>{
+
+    let liked=data.likedBy.includes(user.uid);
+
+    function render(){
+        likeBtn.textContent="❤️ "+data.likes;
+    }
+
+    render();
+
+    likeBtn.onclick=async()=>{
+
+        if(liked){
+            data.likes--;
+            data.likedBy=data.likedBy.filter(u=>u!==user.uid);
+        }else{
+            data.likes++;
+            data.likedBy.push(user.uid);
+        }
+
+        liked=!liked;
+
+        await updateDoc(ref,data);
+
+        render();
+    };
+
+});
+
+</script>
+
+</body>
+</html>
