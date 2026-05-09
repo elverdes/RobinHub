@@ -626,6 +626,7 @@
 
                 div.style.setProperty('font-size', `${optimalSize}px`, 'important');
                 div.scrollLeft = 0;
+                updateTextLines(div);
             };
             div.addEventListener('input', div._inputHandler);
         }
@@ -689,6 +690,22 @@
         adjustTextSizing(item, div);
     }
 
+    function updateTextLines(div) {
+        const computedStyle = window.getComputedStyle(div);
+        const fontSize = parseFloat(computedStyle.fontSize);
+        let lineHeightPx = parseFloat(computedStyle.lineHeight);
+        if (isNaN(lineHeightPx)) {
+            lineHeightPx = fontSize * 1.2; // default multiplier
+        }
+        // Offset para alinear las líneas con la baseline del texto
+        const offset = fontSize * 0.15; // Ajusta este valor para posicionar mejor las líneas
+        // Aplicar background con líneas horizontales delimitando renglones
+        div.style.backgroundImage = `repeating-linear-gradient(0deg, rgba(27,130,70,0.3) 0px, rgba(27,130,70,0.3) 1px, transparent 1px, transparent ${lineHeightPx}px)`;
+        div.style.backgroundPosition = `0 ${offset}px`;
+        div.style.backgroundRepeat = 'repeat-y';
+        div.style.backgroundSize = `100% ${lineHeightPx}px`;
+    }
+
     function adjustTextSizing(item, div) {
         if (!div || item.type !== 'text') return;
 
@@ -736,6 +753,7 @@
 
         div.style.setProperty('font-size', `${optimalSize}px`, 'important');
         div.scrollLeft = 0;
+        updateTextLines(div);
     }
 
     function checkCollisionAxis(item, newLeft, newTop, newWidth, newHeight, deltaX, deltaY) {
