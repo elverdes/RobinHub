@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ajustes - RobinHub</title>
+    <style>
+        :root { 
+            --primary: #1b8246; 
+            --accent: #2ecc71;
+            --light-green: #e8f5e9;
+            --sidebar-width: 300px;
+            /* Variables para el Modo Claro/Oscuro */
+            --bg-card: #ffffff;
+            --text-main: #2c3e50;
+            --text-secondary: #777777;
+            --nav-bottom-bg: var(--light-green);
+            --sidebar-bg: rgba(255, 255, 255, 0.98);
+            --overlay: rgba(255, 255, 255, 0.4);
+        }
+
+        [data-theme="dark"] {
+            --bg-card: #1a1a1a;
+            --text-main: #f0f0f0;
+            --text-secondary: #bbbbbb;
+            --nav-bottom-bg: #0d3d21;
+            --sidebar-bg: rgba(20, 20, 20, 0.98);
+            --overlay: rgba(0, 0, 0, 0.6);
+        }
+
+        body { 
+            margin: 0; font-family: 'Segoe UI', sans-serif; 
+            background-image: url('claro.png'); 
+            background-size: 100% auto; background-repeat: repeat-y; 
+            background-attachment: scroll; overflow-x: hidden;
+        }
+
+        body::after {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--overlay); z-index: -1; pointer-events: none;
+            transition: background 0.5s ease;
+        }
+
+        /* --- HEADER --- */
+        header { position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .nav-top { background: var(--primary); height: 75px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; }
+        .nav-bottom { 
+            background: var(--nav-bottom-bg); height: 60px; 
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 5% 0 150px; border-bottom: 4px solid var(--accent);
+            transition: background 0.5s ease;
+        }
+
+        .brand-text-bottom {
+            color: var(--primary); font-size: 32px; font-weight: 800;
+            margin-left: 40px; letter-spacing: -1px; pointer-events: none; user-select: none;
+        }
+
+        .consejo-texto { color: var(--primary); font-size: 15px; font-weight: 600; font-style: italic; }
+
+        /* --- CONTENEDOR --- */
+        .settings-container {
+            max-width: 650px;
+            margin: 40px auto;
+            background: var(--bg-card);
+            backdrop-filter: blur(15px);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: var(--text-main);
+        }
+
+        h2 { color: var(--primary); margin-bottom: 30px; border-bottom: 2px solid var(--light-green); padding-bottom: 10px; }
+
+        /* --- SECCIONES DE AJUSTES --- */
+        .setting-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 0; border-bottom: 1px solid #eee;
+        }
+
+        .setting-info h4 { margin: 0; color: #333; font-size: 18px; }
+        .setting-info p { margin: 5px 0 0; color: #666; font-size: 14px; }
+
+        /* Switch Estilizado */
+        .switch {
+            position: relative; display: inline-block; width: 50px; height: 26px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .btn-action {
+            background: var(--primary); color: white; border: none; padding: 10px 20px;
+            border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .btn-action:hover { background: var(--accent); }
+
+        .btn-danger { background: #ff4757; }
+        .btn-danger:hover { background: #ff6b81; }
+
+        .footer-buttons { margin-top: 30px; display: flex; gap: 15px; }
+        .btn-back { flex: 1; text-align: center; padding: 15px; background: #eee; color: #333; text-decoration: none; border-radius: 15px; font-weight: bold; }
+
+
+        /* --- LOGO SAGRADO --- */
+        .header-left { position: relative; display: flex; align-items: center; }
+        .logo-arquero {
+            width: 145px; height: auto; cursor: pointer; z-index: 3000;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.25));
+            position: absolute; top: -35px; left: 0;
+        }
+
+        /* --- FLECHA --- */
+        .flecha-container {
+            position: absolute; left: 75px; top: 5px;
+            width: 80px; height: 50px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; opacity: 0; pointer-events: none;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2500;
+        }
+        .flecha { width: 50px; height: 4px; background: #ffffff; box-shadow: 0 0 8px white; border-radius: 2px; position: relative; }
+        .flecha::after { content: ''; position: absolute; right: -2px; top: -5px; border-left: 14px solid white; border-top: 6px solid transparent; border-bottom: 6px solid transparent; }
+        .menu-open .flecha-container { opacity: 1; left: calc(var(--sidebar-width) - 40px); pointer-events: auto; }
+
+        /* --- SIDEBAR IZQUIERDA --- */
+        .sidebar {
+            height: 100%; width: var(--sidebar-width); position: fixed; top: 0; left: calc(var(--sidebar-width) * -1);
+            background: var(--sidebar-bg); backdrop-filter: blur(15px); z-index: 2000;
+            transition: 0.5s; box-shadow: 8px 0 30px rgba(0,0,0,0.15); padding-top: 150px;
+        }
+        .menu-open .sidebar { left: 0; }
+        .sidebar a { padding: 18px 35px; text-decoration: none; font-size: 18px; color: var(--text-main); display: block; font-weight: 700; transition: 0.3s; cursor: pointer; }
+        .sidebar a:hover { background: var(--light-green); color: var(--primary); transform: translateX(10px); }
+
+        .submenu { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: rgba(0, 0, 0, 0.05); }
+        .submenu-active { max-height: 500px; }
+        .submenu a { padding: 12px 50px; font-size: 15px; opacity: 0.8; }
+[data-theme="dark"] {
+    --bg-card: #1a1a1a;
+    --text-main: #f0f0f0;
+    --light-green: #0d3d21; /* Verde muy oscuro para el fondo del nav-bottom */
+}
+
+/* Aplicación del fondo oscuro al overlay */
+[data-theme="dark"] body::after {
+    background: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Si tienes tarjetas de sugerencias o publicar, añade esto para que cambien de color */
+[data-theme="dark"] .sugerencia-card, 
+[data-theme="dark"] .publicar-container,
+[data-theme="dark"] .ajustes-card {
+    background: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    border-color: rgba(255,255,255,0.1);
+}
+
+    </style>
+</head>
+<body id="bodyTag">
+
+<header>
+    <div class="nav-top">
+        <div class="header-left">
+            <img src="182 sin título_20260415212120.png" class="logo-arquero" onclick="toggleMenu()">
+            <div class="flecha-container" onclick="toggleMenu()">
+                <div class="flecha"></div>
+            </div>
+        </div>
+    </div>
+    <div class="nav-bottom">
+        <div><span class="brand-text-bottom">obinHub</span></div>
+        <div class="consejo-texto" id="randomTip">Personaliza tu experiencia...</div>
+    </div>
+</header>
+
+<div id="mySidebar" class="sidebar">
+    <a href="#" id="sidePerfil">👤 Mi Perfil</a>
+    <a href="inicio.html">🌲 El Bosque</a>
+    <a href="publicar.html">🚀 Publicar Idea</a>
+    <hr style="border:0; border-top:1px solid rgba(128,128,128,0.2); margin:15px 25px;">
+    
+    <a onclick="event.preventDefault(); toggleSubmenu()">⚙️ Ajustes ▾</a>
+    <div id="submenuAjustes" class="submenu"></div>
+
+    <a href="sugerencias.html">💡 Sugerencias</a>
+    <a href="#" id="sideLogout" style="color: #ff4757;">🚪 Cerrar Sesión</a>
+</div>
+    
+    <a onclick="event.preventDefault(); toggleSubmenu()">⚙️ Ajustes ▾</a>
+    <div id="submenuAjustes" class="submenu"></div>
+
+    <a href="sugerencias.html">💡 Sugerencias</a>
+    <a href="#" id="sideLogout" style="color: #ff4757;">🚪 Cerrar Sesión</a>
+</div>
+
+<div class="settings-container">
+    <h2>Ajustes de la Aplicación</h2>
+
+    <div class="setting-item">
+        <div class="setting-info">
+            <h4>Modo Lectura</h4>
+            <p>Aumenta el contraste de los textos en las fichas.</p>
+        </div>
+        <label class="switch">
+            <input type="checkbox" id="darkMode">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="setting-item">
+        <div class="setting-info">
+            <h4>Alertas de "El Bosque"</h4>
+            <p>Recibe avisos cuando alguien apoye tus ideas.</p>
+        </div>
+        <label class="switch">
+            <input type="checkbox" checked>
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="setting-item">
+        <div class="setting-info">
+            <h4>Visibilidad de Visitas</h4>
+            <p>Permitir que otros vean cuánta gente mira tus proyectos.</p>
+        </div>
+        <label class="switch">
+            <input type="checkbox" checked>
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="setting-item">
+        <div class="setting-info">
+            <h4>Idioma de la interfaz</h4>
+            <p>Actualmente: Español (Castellano)</p>
+        </div>
+        <button class="btn-action">Cambiar</button>
+    </div>
+
+    <div class="setting-item">
+        <div class="setting-info" style="color: #ff4757;">
+            <h4>Zona de Peligro</h4>
+            <p>Borrar historial de búsqueda o cerrar cuenta permanentemente.</p>
+        </div>
+        <button class="btn-action btn-danger">Borrar Datos</button>
+    </div>
+
+    <div class="footer-buttons">
+        <a href="inicio.html" class="btn-back">Cerrar Ajustes</a>
+        <button class="btn-action" style="flex:2;" onclick="alert('¡Ajustes aplicados localmente!')">Guardar Preferencias</button>
+    </div>
+</div>
+
+<script type="module">
+    import { auth } from "./firebase.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // --- CONSEJOS ALEATORIOS ---
+    const tips = [
+        "Personaliza tu experiencia...",
+        "Ajusta la plataforma a tu gusto.",
+        "Configura notificaciones y temas.",
+        "Haz que RobinHub sea tuyo.",
+        "Explora todas las opciones disponibles."
+    ];
+    document.getElementById("randomTip").textContent = tips[Math.floor(Math.random() * tips.length)];
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user) window.location.href = "login.html";
+    });
+
+    // Pequeño truco visual para el modo lectura
+    document.getElementById("darkMode").addEventListener("change", (e) => {
+        if(e.target.checked) {
+            alert("Modo lectura activado: Los textos ahora resaltarán más sobre el fondo.");
+        }
+    });
+    // --- LÓGICA DE PERSISTENCIA DE TEMA ---
+function aplicarTemaGuardado() {
+    const tema = localStorage.getItem('robinTema') || 'claro';
+    const body = document.body;
+    
+    if (tema === 'oscuro') {
+        document.documentElement.setAttribute("data-theme", "dark");
+        body.style.backgroundImage = "url('oscuro.png')";
+    } else {
+        document.documentElement.removeAttribute("data-theme");
+        body.style.backgroundImage = "url('claro.png')";
+    }
+}
+
+// Función para cambiar el tema (llámala desde tu botón del menú)
+window.toggleTheme = () => {
+    const esOscuro = document.documentElement.getAttribute("data-theme") === "dark";
+    const nuevoTema = esOscuro ? 'claro' : 'oscuro';
+    
+    localStorage.setItem('robinTema', nuevoTema);
+    aplicarTemaGuardado();
+};
+
+// Ejecutar inmediatamente al cargar la página
+aplicarTemaGuardado();
+
+// --- FUNCIONES PARA SIDEBAR ---
+window.toggleMenu = () => document.getElementById("bodyTag").classList.toggle("menu-open");
+window.toggleSubmenu = () => document.getElementById("submenuAjustes").classList.toggle("submenu-active");
+
+// Cerrar sidebar al navegar
+function closeMenu() {
+    document.getElementById("bodyTag").classList.remove("menu-open");
+}
+
+// Configurar sidebar
+const DEFAULT_CONFIG = [
+    { id: 'tema', label: '🌓 Modo claro/oscuro', visible: true },
+    { id: 'notif', label: '🔔 Notificaciones', visible: true },
+    { id: 'edit', label: '✏️ Editar', visible: true },
+    { id: 'more', label: '⚙️ Más ajustes', visible: true }
+];
+
+let menuConfig = JSON.parse(localStorage.getItem('robinMenuConfig')) || DEFAULT_CONFIG;
+
+function renderSubmenu() {
+    const container = document.getElementById("submenuAjustes");
+    if(!container) return;
+    container.innerHTML = "";
+    menuConfig.forEach(item => {
+        if (item.visible) {
+            const a = document.createElement("a");
+            a.textContent = item.label;
+            a.onclick = () => {
+                if (item.id === 'tema') toggleTheme();
+                else if (item.id === 'more') { closeMenu(); window.location.href = 'ajustes.html'; }
+            };
+            container.appendChild(a);
+        }
+    });
+}
+
+renderSubmenu();
+
+// Configurar enlaces de sidebar - cerrar al navegar
+const sidebarLinks = document.querySelectorAll('.sidebar a:not(#sideLogout)');
+sidebarLinks.forEach(link => {
+    link.addEventListener('click', closeMenu);
+});
+
+// Configurar enlaces de sidebar especiales
+document.getElementById("sidePerfil").onclick = () => { closeMenu(); window.location.href = `perfil.html?uid=${auth.currentUser?.uid}`; };
+document.getElementById("sideLogout").onclick = async () => {
+    closeMenu();
+    await signOut(auth);
+    window.location.href = "RobinHub.html";
+};
+
+</script>
+
+</body>
+</html>
