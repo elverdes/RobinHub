@@ -179,7 +179,7 @@
     <a href="publicar.html">🚀 Publicar Idea</a>
     <hr style="border:0; border-top:1px solid rgba(128,128,128,0.2); margin:15px 25px;">
     
-    <a onclick="event.preventDefault(); toggleSubmenu()">⚙️ Ajustes ▾</a>
+    <a class="submenu-toggle" onclick="event.preventDefault(); event.stopPropagation(); toggleSubmenu()">⚙️ Ajustes ▾</a>
     <div id="submenuAjustes" class="submenu"></div>
 
     <a href="sugerencias.html">💡 Sugerencias</a>
@@ -331,7 +331,7 @@ function renderSubmenu() {
 renderSubmenu();
 
 // Configurar enlaces de sidebar - cerrar al navegar
-const sidebarLinks = document.querySelectorAll('.sidebar a:not(#sideLogout)');
+const sidebarLinks = document.querySelectorAll('.sidebar a:not(#sideLogout):not(.submenu-toggle)');
 sidebarLinks.forEach(link => {
     link.addEventListener('click', closeMenu);
 });

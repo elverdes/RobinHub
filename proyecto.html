@@ -97,6 +97,20 @@
         
         .description { line-height: 1.8; color: #333; font-size: 19px; white-space: pre-wrap; margin: 35px 0; background: #fafafa; padding: 25px; border-radius: 20px; }
 
+        .project-dynamic { position: relative; width: 100%; min-height: 620px; background: #f6fbf5; border-radius: 35px; margin: 40px auto; box-shadow: 0 20px 60px rgba(0,0,0,0.12); border: 1px solid rgba(27,130,70,0.15); overflow: hidden; }
+        .project-element { position: absolute; box-sizing: border-box; border: 1px solid rgba(27,130,70,0.15); border-radius: 22px; background: rgba(255,255,255,0.96); display: flex; align-items: center; justify-content: center; padding: 14px; overflow: hidden; }
+        .project-element img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; }
+        .dynamic-text { width: 100%; height: 100%; overflow: auto; color: #1d3e1f; }
+        .dynamic-text.title { font-size: 28px; font-weight: 800; }
+        .dynamic-text.description { font-size: 16px; line-height: 1.7; }
+        .dynamic-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+        .dynamic-tags span { background: var(--primary); color: #fff; border-radius: 14px; padding: 6px 12px; font-size: 13px; }
+        .dynamic-btn { width: 100%; height: 100%; border: none; border-radius: 18px; background: var(--primary); color: white; font-weight: 800; font-size: 14px; cursor: pointer; }
+        .dynamic-btn.copy { background: #3a6b3d; }
+        .dynamic-btn.contact { background: #e67e22; }
+        .project-meta { max-width: 1000px; margin: 20px auto 0; padding: 0 20px; }
+        .project-meta .author-box { margin-bottom: 20px; }
+
         .action-bar { display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #f0f0f0; padding-top: 30px; }
         .btn-like { background: white; border: 2.5px solid #ff4757; color: #ff4757; padding: 14px 40px; border-radius: 35px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; font-size: 16px; }
         .btn-like:hover { transform: scale(1.05); }
@@ -169,11 +183,28 @@
     <a href="publicar.html">🚀 Publicar Idea</a>
     <hr style="border:0; border-top:1px solid rgba(128,128,128,0.2); margin:15px 25px;">
     
-    <a onclick="event.preventDefault(); toggleSubmenu()">⚙️ Ajustes ▾</a>
+    <a class="submenu-toggle" onclick="event.preventDefault(); event.stopPropagation(); toggleSubmenu()">⚙️ Ajustes ▾</a>
     <div id="submenuAjustes" class="submenu"></div>
 
     <a href="sugerencias.html">💡 Sugerencias</a>
     <a href="#" id="sideLogout" style="color: #ff4757;">🚪 Cerrar Sesión</a>
+</div>
+
+<div id="projectDynamic" class="project-dynamic" style="display:none;"></div>
+<div id="dynamicMeta" class="project-meta" style="display:none;">
+    <div class="author-box" id="dynamicAuthorBox">
+        <img id="dynamicAuthorImg" src="https://ui-avatars.com/api/?name=U">
+        <div>
+            <strong id="dynamicAuthorName">Usuario</strong>
+            <div style="font-size: 13px; color: #666;">Ver Perfil Completo</div>
+        </div>
+    </div>
+    <div class="action-bar">
+        <button id="dynamicLikeBtn" class="btn-like">
+            <span id="dynamicLikeIcon" style="font-size:20px">🤍</span> <span id="dynamicLikesCount">0</span> Likes
+        </button>
+        <div style="font-size: 20px; color: #555; font-weight: bold;">👁️ <span id="dynamicVisitasCount">0</span> <span style="font-size: 14px; color: #888;">Visualizaciones</span></div>
+    </div>
 </div>
 
 <div class="project-container">
@@ -266,12 +297,16 @@
         loadAuthorProjects(data.userId, projectId);
         loadSimilarProjects(data.tags || [], projectId);
 
+        renderDynamicLayout(data);
+
         // Comprobar si el usuario ya dio like
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 const liked = (data.likedBy || []).includes(user.uid);
                 document.getElementById("likeBtn").className = liked ? "btn-like active" : "btn-like";
                 document.getElementById("likeIcon").textContent = liked ? "❤️" : "🤍";
+                document.getElementById("dynamicLikeBtn").className = liked ? "btn-like active" : "btn-like";
+                document.getElementById("dynamicLikeIcon").textContent = liked ? "❤️" : "🤍";
             }
         });
     });
@@ -295,6 +330,91 @@
         snap.forEach(d => {
             if(d.id !== currentId) renderReco(box, d.id, d.data());
         });
+    }
+
+    function normalizeTagText(text) {
+        return Array.from(new Set((text || '')
+            .toLowerCase()
+            .split(/[#\s,;]+/)
+            .map(t => t.replace(/^#/, '').trim())
+            .filter(Boolean)));
+    }
+
+    function renderDynamicLayout(data) {
+        const container = document.getElementById("projectDynamic");
+        const meta = document.getElementById("dynamicMeta");
+        const staticContainer = document.querySelector(".project-container");
+        container.innerHTML = "";
+
+        if (!data.previewLayout || !Array.isArray(data.previewLayout.elements) || !data.previewLayout.elements.length) {
+            container.style.display = 'none';
+            meta.style.display = 'none';
+            if (staticContainer) staticContainer.style.display = 'block';
+            return;
+        }
+
+        data.previewLayout.elements.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'project-element';
+            el.style.top = item.top + 'px';
+            el.style.left = item.left + 'px';
+            el.style.width = item.width + 'px';
+            el.style.height = item.height + 'px';
+
+            if (item.type === 'image') {
+                const img = document.createElement('img');
+                img.src = item.content || data.imagen || '';
+                el.appendChild(img);
+            } else if (item.type === 'text') {
+                const div = document.createElement('div');
+                div.className = `dynamic-text ${item.textClass || ''}`;
+                div.textContent = item.content || (item.id === 'title' ? data.titulo : data.descripcion);
+                el.appendChild(div);
+            } else if (item.type === 'tags') {
+                const div = document.createElement('div');
+                div.className = 'dynamic-text dynamic-tags';
+                const tags = normalizeTagText(item.content).length ? normalizeTagText(item.content) : (data.tags || []);
+                tags.forEach(tag => {
+                    const span = document.createElement('span');
+                    span.textContent = '#' + tag;
+                    div.appendChild(span);
+                });
+                el.appendChild(div);
+            } else if (item.type === 'button') {
+                const btn = document.createElement('button');
+                btn.className = `dynamic-btn ${item.id}`;
+                btn.textContent = item.content;
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    if (item.id === 'copy') {
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            await navigator.clipboard.writeText(window.location.href);
+                            alert('Enlace copiado al portapapeles');
+                        } else {
+                            prompt('Copia este enlace:', window.location.href);
+                        }
+                    } else if (item.id === 'contact') {
+                        location.href = `perfil.html?uid=${data.userId}`;
+                    } else if (item.id === 'like') {
+                        document.getElementById('likeBtn').click();
+                    }
+                });
+                el.appendChild(btn);
+            }
+
+            container.appendChild(el);
+        });
+
+        if (staticContainer) staticContainer.style.display = 'none';
+        container.style.display = 'block';
+        meta.style.display = 'block';
+
+        document.getElementById("dynamicAuthorName").textContent = document.getElementById("p-autor").textContent;
+        document.getElementById("dynamicAuthorImg").src = document.getElementById("author-img").src;
+        document.getElementById("dynamicAuthorBox").onclick = () => location.href=`perfil.html?uid=${data.userId}`;
+        document.getElementById("dynamicLikesCount").textContent = data.likes || 0;
+        document.getElementById("dynamicVisitasCount").textContent = data.visitas || 0;
+        document.getElementById("dynamicLikeBtn").onclick = async () => document.getElementById('likeBtn').click();
     }
 
     function renderReco(container, id, data) {
@@ -380,7 +500,7 @@ function renderSubmenu() {
 renderSubmenu();
 
 // Configurar enlaces de sidebar - cerrar al navegar
-const sidebarLinks = document.querySelectorAll('.sidebar a:not(#sideLogout)');
+const sidebarLinks = document.querySelectorAll('.sidebar a:not(#sideLogout):not(.submenu-toggle)');
 sidebarLinks.forEach(link => {
     link.addEventListener('click', closeMenu);
 });

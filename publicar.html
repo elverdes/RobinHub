@@ -42,46 +42,122 @@
 
         /* --- HEADER --- */
         header { position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .nav-top { background: var(--primary); height: 75px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; }
+        .nav-top { background: var(--primary); height: 75px; display: flex; justify-content: space-between; align-items: center; padding: 0 5%; gap: 18px; position: relative; }
         .nav-bottom { 
             background: var(--nav-bottom-bg); height: 60px; 
-            display: flex; align-items: center; justify-content: space-between;
+            display: flex; justify-content: space-between; align-items: center;
             padding: 0 5% 0 150px; border-bottom: 4px solid var(--accent);
             transition: background 0.5s ease;
         }
 
+        .nav-bottom-left { margin-left: 40px; }
+
         .brand-text-bottom {
             color: var(--primary); font-size: 32px; font-weight: 800;
-            margin-left: 40px; letter-spacing: -1px; pointer-events: none; user-select: none;
+            letter-spacing: -1px; pointer-events: none; user-select: none;
+        }
+
+        .top-page-title {
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            color: #ffffff; font-size: 30px; font-weight: 900; letter-spacing: -0.6px;
+            white-space: nowrap; text-align: center;
         }
 
         .consejo-texto { color: var(--primary); font-size: 15px; font-weight: 600; font-style: italic; }
 
-        /* --- GRID Y CONTROLES --- */
-        .controls-wrapper { display: flex; align-items: center; gap: 15px; flex-grow: 1; margin-left: 100px; }
-        .container { max-width: 500px; margin: 40px auto; background: var(--bg-card); padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); color: var(--text-main); }
-        h2 { color: var(--primary); text-align: center; margin-top: 0; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; font-size: 14px; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
-        
-        /* Buscador de Tags Popularity */
-        .tags-wrapper { position: relative; }
-        #suggestions { 
-            position: absolute; top: 45px; left: 0; width: 100%; 
-            background: white; border: 1px solid #ddd; border-radius: 8px; 
-            max-height: 200px; overflow-y: auto; z-index: 10; display: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .suggestion-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; display: flex; justify-content: space-between; }
-        .suggestion-item:hover { background: #e9f8ef; color: var(--primary); }
-        .tag-count { font-size: 11px; color: #999; background: #eee; padding: 2px 6px; border-radius: 10px; }
+        .editor-toolbar { display: flex; gap: 8px; }
+        .editor-toolbar button { width: 40px; height: 40px; border: none; border-radius: 8px; background: rgba(255,255,255,0.1); color: white; font-size: 18px; cursor: pointer; transition: 0.3s; }
+        .editor-toolbar button:hover { background: rgba(255,255,255,0.2); }
+        .add-menu { position: relative; }
+        .add-menu .menu { display: none; position: absolute; top: 50px; left: 0; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 100; min-width: 120px; }
+        .add-menu.open .menu { display: block; }
+        .menu button { width: 100%; text-align: left; padding: 10px 12px; background: none; border: none; cursor: pointer; font-size: 14px; color: #333; }
+        .menu button:hover { background: #f0f0f0; }
 
-        button { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
+
+        /* --- GRID Y CONTROLES --- */
+        .controls-wrapper { display: flex; align-items: center; gap: 15px; flex-grow: 1; margin-left: 0; }
+        .preview-shell { width: min(100%, 1080px); max-width: 1080px; height: calc(100vh - 135px); margin: 0 auto; padding: 10px 10px 0; display: flex; flex-direction: column; gap: 12px; }
+        .preview-shell .back-link { display: inline-block; margin-bottom: 0; }
+        .top-action-form { margin: 0; }
+        .top-action-form button { width: auto; min-width: 190px; padding: 12px 18px; }
+        .tag-search-container { width: 100%; height: 100%; display: flex; flex-direction: column; gap: 8px; position: relative; user-select: none; }
+        .tag-search-box { width: 100%; min-height: 46px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border-radius: 18px; border: 1px solid rgba(27,130,70,0.24); background: white; }
+        .tag-chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tag-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--primary); color: white; padding: 6px 10px; border-radius: 14px; font-size: 13px; }
+        .tag-chip button { border: none; background: transparent; color: rgba(255,255,255,0.95); cursor: pointer; font-size: 12px; }
+        .tag-search-input { width: 100%; min-width: 120px; border: none; outline: none; font-size: 14px; padding: 6px 0; background: transparent; color: #1f4021; }
+        .tag-suggestions { position: absolute; top: calc(100% + 8px); left: 0; right: 0; max-height: 220px; overflow: auto; background: white; border: 1px solid rgba(27,130,70,0.2); border-radius: 18px; box-shadow: 0 18px 36px rgba(0,0,0,0.14); z-index: 15; }
+        .tag-suggestions.hidden { display: none; }
+        .tag-suggestion-item { padding: 10px 14px; cursor: pointer; transition: 0.2s; color: #1f4021; }
+        .tag-suggestion-item:hover { background: rgba(27,130,70,0.08); }
+        .preview-btn { width: 100%; height: 100%; border: none; border-radius: 18px; background: var(--primary); color: white; font-weight: 800; font-size: 24px; cursor: default; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0; }
+        .preview-btn.copy { background: #3f7240; }
+        .preview-btn.contact { background: #e67e22; }
+        button { padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
         button:disabled { background: #ccc; cursor: not-allowed; }
-        #preview { width: 100%; border-radius: 8px; margin-bottom: 15px; display: none; max-height: 200px; object-fit: cover; border: 1px solid #ddd; }
+        .hidden-input { display: none; }
+        .preview-editor { position: relative; width: 100%; flex: 1; min-height: 0; border-radius: 34px; background: radial-gradient(circle at top left, rgba(178,235,179,0.35), transparent 35%), #eff8f0; border: 2px solid rgba(27,130,70,0.18); overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.12); padding: 16px; }
+        .preview-editor.grid-enabled { background-image: repeating-linear-gradient(0deg, rgba(27,130,70,0.15) 0px, rgba(27,130,70,0.15) 1px, transparent 1px, transparent 20px), repeating-linear-gradient(90deg, rgba(27,130,70,0.15) 0px, rgba(27,130,70,0.15) 1px, transparent 1px, transparent 20px), radial-gradient(circle at top left, rgba(178,235,179,0.35), transparent 35%); background-color: #eff8f0; }
+        .preview-editor::before { content: ""; }
+        .preview-editor::before { content: "Previsualización editable"; position: absolute; top: 18px; left: 24px; font-size: 13px; color: #38673b; text-transform: uppercase; letter-spacing: 0.18em; }
+        .preview-element { position: absolute; box-sizing: border-box; border: 1px solid transparent; background: rgba(255,255,255,0.95); border-radius: 22px; box-shadow: 0 20px 45px rgba(0,0,0,0.08); overflow: visible; cursor: grab; display: flex; align-items: center; justify-content: center; padding: 12px; touch-action: none; transition: border-color 0.2s; }
+        .preview-element:hover { border-color: rgba(27,130,70,0.45); }
+        .preview-element.collision-enabled { border: 2px dashed #1b8246; background-color: rgba(46, 204, 113, 0.05); }
+        .preview-element.collision-enabled:hover { border-color: #1b8246; }
+        .preview-element.drag-mode::before { content: '←'; position: absolute; top: 50%; left: 4px; transform: translateY(-50%); font-size: 12px; color: rgba(27, 130, 70, 0.5); pointer-events: none; }
+        .preview-element.drag-mode::after { content: '→'; position: absolute; top: 50%; right: 4px; transform: translateY(-50%); font-size: 12px; color: rgba(27, 130, 70, 0.5); pointer-events: none; }
+        .preview-element.drag-mode { background: linear-gradient(to bottom, rgba(27, 130, 70, 0.05) 0%, rgba(27, 130, 70, 0.05) 20%, transparent 20%, transparent 80%, rgba(27, 130, 70, 0.05) 80%, rgba(27, 130, 70, 0.05) 100%); }
+        .preview-element .element-handle { position: absolute; width: 18px; height: 18px; right: -9px; bottom: -9px; background: var(--primary); border-radius: 50%; cursor: se-resize; box-shadow: 0 0 18px rgba(0,0,0,0.22); }
+        .preview-element:active { cursor: grabbing; }
+        .preview-element:hover { border-color: rgba(27,130,70,0.45); }
+        .preview-element .element-handle { position: absolute; width: 18px; height: 18px; right: -9px; bottom: -9px; background: var(--primary); border-radius: 50%; cursor: se-resize; box-shadow: 0 0 18px rgba(0,0,0,0.22); }
+        .preview-image { width: 100%; height: 100%; background: linear-gradient(135deg, #e6f7e9 0%, #d7f0dc 100%); display: flex; align-items: center; justify-content: center; color: #38673b; font-weight: 700; text-align: center; padding: 14px; user-select: none; }
+        .preview-image img { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; }
+        .preview-text { width: 100%; height: 100%; padding: 12px; outline: none; white-space: pre; overflow: hidden; overflow-wrap: normal; word-break: normal; color: #1f4021; user-select: none; transition: border-color 0.2s, background-color 0.2s; position: relative; font-size: 48px; box-sizing: border-box; border: 1px dashed rgba(27,130,70,0.3); border-radius: 18px; background: rgba(255,255,255,0.95); line-height: 1.2; }
+        .preview-text:focus { border-color: rgba(27,130,70,0.8); background: rgba(255,255,255,0.98); }
+        .preview-text .placeholder { color: rgba(31, 64, 33, 0.55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .character-counter { position: absolute; bottom: 4px; right: 8px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2; user-select: none; pointer-events: none; }
+        .preview-text.title { font-weight: 900; line-height: 1.1; }
+        .preview-text.description { line-height: 1.7; }
+        .preview-text.tags { display: flex; flex-wrap: wrap; gap: 10px; font-size: 14px; }
+        .preview-text.tags span { background: var(--primary); color: white; border-radius: 16px; padding: 8px 12px; }
+        .preview-btn { width: 100%; height: 100%; border: none; border-radius: 18px; background: var(--primary); color: white; font-weight: 800; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; padding: 12px; }
+        .preview-btn.copy { background: #3f7240; }
+        .preview-btn.contact { background: #e67e22; }
+        .preview-note { font-size: 14px; color: #3c5f3c; margin-bottom: 18px; }
         .tag-list { margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 5px; }
         .tag-item { background: var(--primary); color: white; padding: 4px 10px; border-radius: 15px; font-size: 12px; }
+        .preview-shell button { width: 250px; max-width: 100%; margin-top: 10px; }
         .back-link { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 14px; display: inline-block; margin-bottom: 15px; }
+
+        /* --- PANEL DE CAPAS --- */
+        .layers-panel-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; }
+        .layers-panel-overlay.open { display: block; }
+        .layers-panel { position: fixed; right: 0; top: 0; width: 350px; height: 100%; background: rgba(255, 255, 255, 0.78); backdrop-filter: blur(12px); box-shadow: -8px 0 30px rgba(0,0,0,0.2); z-index: 3001; display: flex; flex-direction: column; padding-top: 80px; overflow: hidden; }
+        .layers-header { padding: 12px; border-bottom: 1px solid rgba(27,130,70,0.15); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .layers-header h3 { margin: 0; color: var(--text-main); font-size: 16px; }
+        .layers-close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); }
+        .layers-list { flex: 1 1 auto; overflow-y: auto; padding: 6px; min-height: 0; }
+        .layer-item { padding: 8px; margin: 2px 0; border-radius: 6px; background: rgba(27,130,70,0.1); border-left: 3px solid var(--primary); cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .layer-item:hover { background: rgba(27,130,70,0.2); }
+        .layer-item.selected { background: rgba(27,130,70,0.3); border-left-color: var(--accent); }
+        .layer-item-name { flex: 1; color: var(--text-main); font-weight: 500; }
+        .layer-item-actions { display: flex; gap: 3px; }
+        .layer-item-actions button { width: 20px; height: 20px; border: none; border-radius: 3px; background: rgba(27,130,70,0.2); cursor: pointer; font-size: 11px; transition: 0.2s; padding: 0; }
+        .layer-item-actions button:hover { background: rgba(27,130,70,0.4); }
+        .layers-editor { padding: 10px; border-top: 1px solid rgba(27,130,70,0.15); flex: 0 0 42%; overflow-y: auto; }
+        .editor-input { width: 100%; margin: 4px 0; padding: 6px; border: 1px solid rgba(27,130,70,0.2); border-radius: 4px; font-size: 12px; color: var(--text-main); background: rgba(255,255,255,0.9); box-sizing: border-box; }
+        .editor-label { font-size: 11px; font-weight: 600; color: var(--primary); text-transform: uppercase; margin-top: 6px; margin-bottom: 2px; }
+        .editor-section { margin-bottom: 8px; }
+        .color-picker { width: 32px; height: 32px; border: 1px solid rgba(27,130,70,0.2); border-radius: 4px; cursor: pointer; }
+        .z-index-control { display: flex; gap: 4px; align-items: center; }
+        .z-index-control button { width: 24px; height: 24px; border: none; border-radius: 3px; background: rgba(27,130,70,0.2); cursor: pointer; font-size: 12px; padding: 0; }
+        .z-index-control button:hover { background: rgba(27,130,70,0.4); }
+        .z-index-control span { color: var(--text-main); font-size: 11px; }
+        @media (max-width: 768px) {
+            .layers-panel { width: 100%; }
+        }
 
         /* --- LOGO SAGRADO --- */
         .header-left { position: relative; display: flex; align-items: center; }
@@ -149,13 +225,35 @@
                 <div class="flecha"></div>
             </div>
         </div>
+        <span class="top-page-title">Diseñar tu publicación</span>
         <div class="controls-wrapper">
             <a href="inicio.html" class="back-link">← Volver al Bosque</a>
         </div>
+        <form id="formPublicar" class="top-action-form">
+            <button type="submit" id="btnLanzar">🚀 Publicar Idea</button>
+        </form>
     </div>
     <div class="nav-bottom">
-        <div><span class="brand-text-bottom">obinHub</span></div>
-        <div class="consejo-texto" id="randomTip">Cada gran proyecto comienza con una idea...</div>
+        <div class="nav-bottom-left">
+            <span class="brand-text-bottom">obinHub</span>
+        </div>
+        <div class="editor-toolbar">
+            <button id="toggleGridBtn" title="Activar/Desactivar Cuadrícula">📐</button>
+            <button id="toggleCollisionBtn" title="Activar/Desactivar Colisiones">🚫</button>
+            <button id="toggleEditModeBtn" title="Modo Escritura">✏️</button>
+            <button id="layersBtn" title="Panel de Capas">🗂️</button>
+            <div class="add-menu">
+                <button id="addBtn" title="Añadir Elemento">➕</button>
+                <div class="menu">
+                    <button id="addTextBtn">📝 Texto</button>
+                    <button id="addImageBtn">🖼️ Imagen</button>
+                    <button id="addButtonBtn">🔘 Botón</button>
+                </div>
+            </div>
+        </div>
+        <div class="nav-bottom-right">
+            <div class="consejo-texto" id="randomTip">Cada gran proyecto comienza con una idea...</div>
+        </div>
     </div>
 </header>
 
@@ -165,41 +263,34 @@
     <a href="publicar.html">🚀 Publicar Idea</a>
     <hr style="border:0; border-top:1px solid rgba(128,128,128,0.2); margin:15px 25px;">
     
-    <a onclick="event.preventDefault(); toggleSubmenu()">⚙️ Ajustes ▾</a>
+    <a class="submenu-toggle" onclick="event.preventDefault(); event.stopPropagation(); toggleSubmenu()">⚙️ Ajustes ▾</a>
     <div id="submenuAjustes" class="submenu"></div>
 
     <a href="sugerencias.html">💡 Sugerencias</a>
     <a href="#" id="sideLogout" style="color: #ff4757;">🚪 Cerrar Sesión</a>
 </div>
 
-<div class="container">
-    <a href="inicio.html" class="back-link">← Cancelar y volver</a>
-    <h2>Lanzar Proyecto</h2>
-    <form id="formPublicar">
-        <label>Título</label>
-        <input type="text" id="titulo" placeholder="Título de tu idea" required>
-        
-        <label>Descripción</label>
-        <textarea id="descripcion" placeholder="Explica tu idea..." rows="4" required></textarea>
-        
-        <label>Imagen (Máx 1MB)</label>
-        <input type="file" id="fileInput" accept="image/*" required>
-        <img id="preview">
-        
-        <label>Etiquetas (Sugerencias: Las 10 más usadas)</label>
-        <div class="tags-wrapper">
-            <input type="text" id="tagInput" placeholder="Busca o crea etiquetas..." autocomplete="off">
-            <div id="suggestions"></div>
-        </div>
-        <div id="tags" class="tag-list"></div>
-        
-        <button type="submit" id="btnLanzar">🚀 Lanzar Proyecto</button>
-    </form>
-</div>
+<div class="preview-shell">
+        <div id="previewEditor" class="preview-editor"></div>
+        <input type="file" id="fileInput" class="hidden-input" accept="image/*">
+    </div>
 
+    <!-- Panel de Capas -->
+    <div id="layersOverlay" class="layers-panel-overlay"></div>
+    <div id="layersPanel" class="layers-panel">
+        <div class="layers-header">
+            <h3>Capas & Editar</h3>
+            <button class="layers-close-btn" id="layersCloseBtn">✕</button>
+        </div>
+        <div class="layers-list" id="layersList"></div>
+        <div class="layers-editor" id="layersEditor">
+            <p style="text-align: center; color: var(--text-secondary); font-size: 13px;">Selecciona un elemento para editar</p>
+        </div>
+    </div>
 <script type="module">
     import { db, auth } from "./firebase.js";
     import { collection, addDoc, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     // --- CONSEJOS ALEATORIOS ---
     const tips = [
@@ -213,80 +304,715 @@
     document.getElementById("randomTip").textContent = tips[Math.floor(Math.random() * tips.length)];
 
     let base64 = "";
-    let tagsArray = [];
-    let tagsPopularity = []; // Guardará objetos { nombre, count }
     let isSubmitting = false;
 
-    // 1. Calcular el TOP 10 de etiquetas más usadas
+    const previewEditor = document.getElementById('previewEditor');
+    const fileInput = document.getElementById('fileInput');
+    const previewElements = {};
+    let pointerState = null;
+    let lastPointerMoved = false;
+    let gridEnabled = false;
+    let collisionEnabled = true;
+    let editMode = false;
+    const gridSize = 20;
+    const popularTags = [];
+
+    const previewState = {
+        elements: [
+            { id: 'image', type: 'image', top: 30, left: 30, width: 470, height: 300, content: '', bgColor: '#ffffff', textColor: '#1f4021' },
+            { id: 'title', type: 'text', top: 30, left: 520, width: 420, height: 110, content: '', textClass: 'title', bgColor: '#ffffff', textColor: '#1f4021' },
+            { id: 'description', type: 'text', top: 150, left: 520, width: 420, height: 180, content: '', textClass: 'description', bgColor: '#ffffff', textColor: '#1f4021' },
+            { id: 'tags', type: 'tags', top: 340, left: 30, width: 910, height: 90, query: '', selected: [], bgColor: '#ffffff', textColor: '#1f4021' },
+            { id: 'like', type: 'button', top: 450, left: 30, width: 70, height: 70, content: '❤️', bgColor: '#ffffff', textColor: '#1f4021' },
+            { id: 'copy', type: 'button', top: 450, left: 120, width: 70, height: 70, content: '🔗', bgColor: '#ffffff', textColor: '#1f4021' },
+            { id: 'contact', type: 'button', top: 450, left: 210, width: 70, height: 70, content: '✉️', bgColor: '#ffffff', textColor: '#1f4021' }
+        ]
+    };
+
     async function loadPopularTags() {
         const querySnapshot = await getDocs(collection(db, "proyectos"));
         const counts = {};
-        
         querySnapshot.forEach((doc) => {
             const data = doc.data();
             if (data.tags && Array.isArray(data.tags)) {
                 data.tags.forEach(tag => {
-                    const t = tag.toLowerCase().trim();
-                    counts[t] = (counts[t] || 0) + 1;
+                    const name = tag.toLowerCase().trim();
+                    if (!name) return;
+                    counts[name] = (counts[name] || 0) + 1;
                 });
             }
         });
-
-        // Convertir a array, ordenar por frecuencia y quedar con el Top 10
-        tagsPopularity = Object.keys(counts).map(name => ({
-            name: name,
-            count: counts[name]
-        })).sort((a, b) => b.count - a.count);
+        const sorted = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+        popularTags.splice(0, popularTags.length, ...sorted.slice(0, 10));
+        if (popularTags.length === 0) {
+            popularTags.push('innovación', 'startup', 'diseño', 'tecnología', 'salud', 'educación', 'arte', 'comunidad', 'futuro', 'ecología');
+        }
     }
-    
+
+    function normalizeTagText(text) {
+        return Array.from(new Set((text || '')
+            .toLowerCase()
+            .split(/[#\s,;]+/)
+            .map(t => t.replace(/^#/, '').trim())
+            .filter(Boolean)));
+    }
+
+    function createPreviewElement(item) {
+        const el = document.createElement('div');
+        el.className = 'preview-element';
+        el.dataset.id = item.id;
+        el.style.top = item.top + 'px';
+        el.style.left = item.left + 'px';
+        el.style.width = item.width + 'px';
+        el.style.height = item.height + 'px';
+        if (item.bgColor) el.style.background = item.bgColor;
+
+        if (item.type === 'image') {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'preview-image';
+            if (item.content) {
+                const img = document.createElement('img');
+                img.src = item.content;
+                img.alt = 'Imagen de proyecto';
+                wrapper.appendChild(img);
+            } else {
+                wrapper.textContent = 'Pulsa para cargar imagen';
+            }
+            el.appendChild(wrapper);
+        } else if (item.type === 'text') {
+            const container = document.createElement('div');
+            container.style.position = 'relative';
+            container.style.width = '100%';
+            container.style.height = '100%';
+
+            const div = document.createElement('div');
+            div.className = `preview-text ${item.textClass || ''}`;
+            if (item.content) {
+                div.innerHTML = item.content;
+            } else {
+                div.innerHTML = '<span class="placeholder">Pulsa para editar</span>';
+            }
+            if (item.textColor) div.style.color = item.textColor;
+            div.contentEditable = 'false';
+            div.addEventListener('blur', () => disableTextEditing(div, item));
+            div.addEventListener('click', () => makeTextEditable(div, item));
+
+            const counter = document.createElement('div');
+            counter.className = 'character-counter';
+            counter.textContent = '0/500';
+
+            container.appendChild(div);
+            container.appendChild(counter);
+            el.appendChild(container);
+
+            // Inicializar contador
+            updateCharacterCounter(div, counter);
+            adjustTextSizing(item, div);
+        } else if (item.type === 'tags') {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'tag-search-container';
+
+            const chipList = document.createElement('div');
+            chipList.className = 'tag-chip-list';
+            wrapper.appendChild(chipList);
+
+            const searchBox = document.createElement('div');
+            searchBox.className = 'tag-search-box';
+            const input = document.createElement('input');
+            input.className = 'tag-search-input';
+            input.type = 'text';
+            input.placeholder = 'Buscar etiquetas';
+            input.value = item.query || '';
+            searchBox.appendChild(input);
+            wrapper.appendChild(searchBox);
+
+            const suggestions = document.createElement('div');
+            suggestions.className = 'tag-suggestions hidden';
+            wrapper.appendChild(suggestions);
+
+            const updateTagsUI = () => {
+                chipList.innerHTML = '';
+                item.selected.forEach(tag => {
+                    const chip = document.createElement('span');
+                    chip.className = 'tag-chip';
+                    chip.innerHTML = `${tag} <button type="button">×</button>`;
+                    chip.querySelector('button').addEventListener('click', () => {
+                        item.selected = item.selected.filter(t => t !== tag);
+                        updateTagsUI();
+                    });
+                    chipList.appendChild(chip);
+                });
+
+                if (item.selected.length === 0) {
+                    const placeholder = document.createElement('span');
+                    placeholder.className = 'tag-chip';
+                    placeholder.style.background = 'transparent';
+                    placeholder.style.color = '#999';
+                    placeholder.style.boxShadow = 'none';
+                    placeholder.textContent = 'Haz click para buscar etiquetas';
+                    chipList.appendChild(placeholder);
+                }
+            };
+
+            const updateSuggestions = () => {
+                const query = (item.query || '').toLowerCase().trim();
+                let list = popularTags.filter(tag => !item.selected.includes(tag));
+                if (query) list = list.filter(tag => tag.startsWith(query));
+                suggestions.innerHTML = '';
+                if (list.length === 0) {
+                    const empty = document.createElement('div');
+                    empty.className = 'tag-suggestion-item';
+                    empty.textContent = 'Presiona Enter para crear una etiqueta';
+                    suggestions.appendChild(empty);
+                } else {
+                    list.slice(0, 10).forEach(tag => {
+                        const option = document.createElement('div');
+                        option.className = 'tag-suggestion-item';
+                        option.textContent = tag;
+                        option.addEventListener('click', () => {
+                            if (!item.selected.includes(tag)) item.selected.push(tag);
+                            item.query = '';
+                            input.value = '';
+                            updateTagsUI();
+                            updateSuggestions();
+                        });
+                        suggestions.appendChild(option);
+                    });
+                }
+            };
+
+            input.addEventListener('focus', () => {
+                suggestions.classList.remove('hidden');
+                updateSuggestions();
+            });
+
+            input.addEventListener('blur', () => {
+                setTimeout(() => {
+                    suggestions.classList.add('hidden');
+                }, 150);
+            });
+
+            input.addEventListener('input', (e) => {
+                item.query = e.target.value;
+                updateSuggestions();
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const query = (item.query || '').trim().toLowerCase();
+                    if (query) {
+                        const tag = query.replace(/^#/, '');
+                        if (!item.selected.includes(tag)) item.selected.push(tag);
+                        if (!popularTags.includes(tag)) popularTags.unshift(tag);
+                        item.query = '';
+                        input.value = '';
+                        updateTagsUI();
+                        updateSuggestions();
+                    }
+                }
+            });
+
+            updateTagsUI();
+            wrapper.addEventListener('click', () => input.focus());
+            el.appendChild(wrapper);
+        } else if (item.type === 'button') {
+            const btn = document.createElement('button');
+            btn.className = `preview-btn ${item.id}`;
+            btn.textContent = item.content;
+            if (item.textColor) btn.style.color = item.textColor;
+            btn.addEventListener('click', (e) => e.preventDefault());
+            el.appendChild(btn);
+        }
+
+        const handle = document.createElement('div');
+        handle.className = 'element-handle';
+        el.appendChild(handle);
+        el.addEventListener('pointerdown', (event) => handlePointerDown(event, item.id));
+        return el;
+    }
+
+    function updateCharacterCounter(div, counter) {
+        const placeholder = div.querySelector('.placeholder');
+        const text = placeholder ? '' : (div.textContent || '');
+        const count = text.length;
+        counter.textContent = `${count}/500`;
+        counter.style.color = count >= 500 ? '#ff4444' : 'white';
+    }
+
+    function flashTextWarning(div) {
+        const originalColor = div.style.color || '';
+        div.style.color = '#d8000c';
+        if (div._flashTimeout) {
+            clearTimeout(div._flashTimeout);
+        }
+        div._flashTimeout = setTimeout(() => {
+            div.style.color = originalColor;
+            div._flashTimeout = null;
+        }, 220);
+    }
+
+    function makeTextEditable(div, item) {
+        if (div.isContentEditable) return;
+        if (!item.content || item.content === '<span class="placeholder">Pulsa para editar</span>') {
+            div.textContent = '';
+        }
+        div.contentEditable = 'true';
+        div.style.boxSizing = 'border-box';
+        div.style.userSelect = 'text';
+        div.style.whiteSpace = 'pre';
+        div.style.overflowWrap = 'normal';
+        div.style.wordBreak = 'normal';
+        div.style.overflow = 'hidden';
+
+        const counter = div.parentElement.querySelector('.character-counter');
+
+        if (!div._inputHandler) {
+            div._inputHandler = () => {
+                let text = div.textContent;
+                if (text.length > 500) {
+                    text = text.substring(0, 500);
+                    div.textContent = text;
+                    const range = document.createRange();
+                    range.selectNodeContents(div);
+                    range.collapse(false);
+                    const sel = window.getSelection();
+                    if (sel) {
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+                }
+
+                item.content = div.innerHTML;
+                updateCharacterCounter(div, counter);
+                
+                // Ajusta el tamaño automáticamente para que quepa
+                const container = div.parentElement;
+                const computedStyle = window.getComputedStyle(div);
+                const paddingLeft = parseFloat(computedStyle.paddingLeft) || 0;
+                const paddingRight = parseFloat(computedStyle.paddingRight) || 0;
+                const availableWidth = container.clientWidth - paddingLeft - paddingRight;
+                const minFontSize = 8;
+                const maxFontSize = 120;
+                const textContent = div.innerText || '';
+
+                function measureTextWidth(fontSize) {
+                    const lines = textContent.split('\n');
+                    let maxLineWidth = 0;
+                    for (const line of lines) {
+                        const tempSpan = document.createElement('span');
+                        tempSpan.style.cssText = computedStyle.cssText;
+                        tempSpan.style.fontSize = `${fontSize}px`;
+                        tempSpan.style.whiteSpace = 'pre';
+                        tempSpan.style.position = 'absolute';
+                        tempSpan.style.visibility = 'hidden';
+                        tempSpan.textContent = line || ' ';
+                        document.body.appendChild(tempSpan);
+                        const width = tempSpan.getBoundingClientRect().width;
+                        maxLineWidth = Math.max(maxLineWidth, width);
+                        document.body.removeChild(tempSpan);
+                    }
+                    return maxLineWidth;
+                }
+
+                // Encontrar el tamaño óptimo que haga que quepa
+                let optimalSize = maxFontSize;
+                for (let size = maxFontSize; size >= minFontSize; size--) {
+                    if (measureTextWidth(size) <= availableWidth + 2) {
+                        optimalSize = size;
+                        break;
+                    }
+                }
+
+                div.style.setProperty('font-size', `${optimalSize}px`, 'important');
+                div.scrollLeft = 0;
+            };
+            div.addEventListener('input', div._inputHandler);
+        }
+
+        if (!div._keydownHandler) {
+            div._keydownHandler = (e) => {
+                if (e.key === 'Enter') {
+                    const computedStyle = window.getComputedStyle(div);
+                    const paddingTop = parseFloat(computedStyle.paddingTop) || 0;
+                    const paddingBottom = parseFloat(computedStyle.paddingBottom) || 0;
+                    let lineHeight = parseFloat(computedStyle.lineHeight);
+                    if (isNaN(lineHeight) || lineHeight === 0) {
+                        lineHeight = parseFloat(computedStyle.fontSize) * 1.2;
+                    }
+                    const availableHeight = div.clientHeight - paddingTop - paddingBottom;
+                    const currentLines = (div.innerText || '').split('\n').length;
+                    const maxLines = Math.floor((availableHeight + 1) / lineHeight);
+                    if (currentLines + 1 > maxLines) {
+                        e.preventDefault();
+                        flashTextWarning(div);
+                        return;
+                    }
+                    return;
+                }
+            };
+            div.addEventListener('keydown', div._keydownHandler);
+        }
+
+        div.focus();
+        const range = document.createRange();
+        range.selectNodeContents(div);
+        range.collapse(false);
+        const sel = window.getSelection();
+        if (sel) {
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+    }
+
+    function disableTextEditing(div, item) {
+        if (!div.isContentEditable) return;
+        item.content = div.innerHTML;
+        div.contentEditable = 'false';
+        div.style.userSelect = 'none';
+
+        if (div._inputHandler) {
+            div.removeEventListener('input', div._inputHandler);
+            div._inputHandler = null;
+        }
+        if (div._keydownHandler) {
+            div.removeEventListener('keydown', div._keydownHandler);
+            div._keydownHandler = null;
+        }
+
+        if (!item.content || item.content.trim() === '') {
+            div.innerHTML = '<span class="placeholder">Pulsa para editar</span>';
+        }
+
+        const counter = div.parentElement.querySelector('.character-counter');
+        if (counter) updateCharacterCounter(div, counter);
+        adjustTextSizing(item, div);
+    }
+
+    function adjustTextSizing(item, div) {
+        if (!div || item.type !== 'text') return;
+
+        const container = div.parentElement;
+        if (!container) return;
+        
+        const containerWidth = container.clientWidth;
+        if (containerWidth <= 0) return;
+
+        const computedStyle = window.getComputedStyle(div);
+        const paddingLeft = parseFloat(computedStyle.paddingLeft) || 0;
+        const paddingRight = parseFloat(computedStyle.paddingRight) || 0;
+        const minFontSize = 8;
+        const maxFontSize = 120;
+        const availableWidth = containerWidth - paddingLeft - paddingRight;
+        const textContent = (div.innerText || '');
+
+        function measureTextWidth(fontSize) {
+            const lines = textContent.split('\n');
+            let maxLineWidth = 0;
+            for (const line of lines) {
+                const tempSpan = document.createElement('span');
+                tempSpan.style.cssText = computedStyle.cssText;
+                tempSpan.style.fontSize = `${fontSize}px`;
+                tempSpan.style.whiteSpace = 'pre';
+                tempSpan.style.position = 'absolute';
+                tempSpan.style.visibility = 'hidden';
+                tempSpan.textContent = line || ' ';
+                document.body.appendChild(tempSpan);
+                const width = tempSpan.getBoundingClientRect().width;
+                maxLineWidth = Math.max(maxLineWidth, width);
+                document.body.removeChild(tempSpan);
+            }
+            return maxLineWidth;
+        }
+
+        // Encontrar el tamaño óptimo que haga que quepa
+        let optimalSize = maxFontSize;
+        for (let size = maxFontSize; size >= minFontSize; size--) {
+            if (measureTextWidth(size) <= availableWidth + 2) {
+                optimalSize = size;
+                break;
+            }
+        }
+
+        div.style.setProperty('font-size', `${optimalSize}px`, 'important');
+        div.scrollLeft = 0;
+    }
+
+    function checkCollisionAxis(item, newLeft, newTop, newWidth, newHeight, deltaX, deltaY) {
+        if (!collisionEnabled) return { left: newLeft, top: newTop, width: newWidth, height: newHeight };
+        const others = previewState.elements.filter(el => el.id !== item.id);
+        
+        // Verificar colisión en la nueva posición
+        let collides = false;
+        for (const other of others) {
+            const hCollide = newLeft < other.left + other.width && newLeft + newWidth > other.left;
+            const vCollide = newTop < other.top + other.height && newTop + newHeight > other.top;
+            if (hCollide && vCollide) {
+                collides = true;
+                break;
+            }
+        }
+        
+        if (!collides) {
+            return { left: newLeft, top: newTop, width: newWidth, height: newHeight };
+        }
+        
+        // Si hay colisión, intentar mover solo en un eje
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            // Movimiento principal es horizontal, intenta mover solo en Y
+            let testCollides = false;
+            for (const other of others) {
+                const hCollide = item.left < other.left + other.width && item.left + item.width > other.left;
+                const vCollide = newTop < other.top + other.height && newTop + newHeight > other.top;
+                if (hCollide && vCollide) {
+                    testCollides = true;
+                    break;
+                }
+            }
+            if (!testCollides) {
+                return { left: item.left, top: newTop, width: newWidth, height: newHeight };
+            }
+        } else {
+            // Movimiento principal es vertical, intenta mover solo en X
+            let testCollides = false;
+            for (const other of others) {
+                const hCollide = newLeft < other.left + other.width && newLeft + newWidth > other.left;
+                const vCollide = item.top < other.top + other.height && item.top + item.height > other.top;
+                if (hCollide && vCollide) {
+                    testCollides = true;
+                    break;
+                }
+            }
+            if (!testCollides) {
+                return { left: newLeft, top: item.top, width: newWidth, height: newHeight };
+            }
+        }
+        
+        // Si ambos ejes colisionan, mantener posición original
+        return { left: item.left, top: item.top, width: newWidth, height: newHeight };
+    }
+
+    function snapToGrid(value) {
+        if (!gridEnabled) return value;
+        return Math.round(value / gridSize) * gridSize;
+    }
+
+    function handlePointerDown(event, id) {
+        if (event.button !== 0) return;
+        if (editMode) {
+            // In edit mode, perform actions on pointerdown
+            if (event.target.closest('.preview-text')) {
+                const item = previewState.elements.find(el => el.id === id);
+                const div = event.target.closest('.preview-text');
+                makeTextEditable(div, item);
+            } else if (event.target.closest('.preview-image')) {
+                fileInput.click();
+            }
+            return;
+        }
+        const item = previewState.elements.find(el => el.id === id);
+        if (!item) return;
+        lastPointerMoved = false;
+        pointerState = {
+            id,
+            mode: event.target.classList.contains('element-handle') ? 'resize' : 'move',
+            startX: event.clientX,
+            startY: event.clientY,
+            origLeft: item.left,
+            origTop: item.top,
+            origWidth: item.width,
+            origHeight: item.height,
+            moved: false,
+            pointerId: event.pointerId
+        };
+        const active = document.activeElement;
+        if (active && active.isContentEditable) active.blur();
+        event.currentTarget.setPointerCapture(event.pointerId);
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+    }
+
+    function onPointerMove(event) {
+        if (!pointerState) return;
+        const item = previewState.elements.find(el => el.id === pointerState.id);
+        if (!item) return;
+        const deltaX = event.clientX - pointerState.startX;
+        const deltaY = event.clientY - pointerState.startY;
+        if (!pointerState.moved) {
+            if (Math.hypot(deltaX, deltaY) < 6) return;
+            pointerState.moved = true;
+            lastPointerMoved = true;
+        }
+        const rect = previewEditor.getBoundingClientRect();
+        if (pointerState.mode === 'move') {
+            let newLeft = Math.min(Math.max(0, pointerState.origLeft + deltaX), rect.width - item.width);
+            let newTop = Math.min(Math.max(0, pointerState.origTop + deltaY), rect.height - item.height);
+            newLeft = snapToGrid(newLeft);
+            newTop = snapToGrid(newTop);
+            const adjusted = checkCollisionAxis(item, newLeft, newTop, item.width, item.height, deltaX, deltaY);
+            item.left = adjusted.left;
+            item.top = adjusted.top;
+        } else {
+            let newWidth = Math.max(180, Math.min(rect.width - item.left, pointerState.origWidth + deltaX));
+            let newHeight = Math.max(80, Math.min(rect.height - item.top, pointerState.origHeight + deltaY));
+            newWidth = snapToGrid(newWidth);
+            newHeight = snapToGrid(newHeight);
+            const adjusted = checkCollisionAxis(item, item.left, item.top, newWidth, newHeight);
+            item.width = adjusted.width;
+            item.height = adjusted.height;
+            // Ajustar texto si es elemento de texto
+            if (item.type === 'text') {
+                const textDiv = previewElements[item.id]?.querySelector('.preview-text');
+                if (textDiv) adjustTextSizing(item, textDiv);
+            }
+        }
+        updatePreviewPosition(item);
+    }
+
+    function onPointerUp(event) {
+        if (!pointerState) return;
+        const el = previewElements[pointerState.id];
+        if (el) {
+            try { el.releasePointerCapture(event.pointerId); } catch (err) {}
+        }
+        pointerState = null;
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerUp);
+    }
+
+    function buildPreview() {
+        previewEditor.innerHTML = '';
+        previewState.elements.forEach(item => {
+            const element = createPreviewElement(item);
+            previewEditor.appendChild(element);
+            previewElements[item.id] = element;
+        });
+        updateCursor();
+    }
+
+    function updateCursor() {
+        document.querySelectorAll('.preview-element').forEach(el => {
+            el.style.cursor = editMode ? 'default' : 'grab';
+            el.classList.toggle('drag-mode', !editMode);
+            el.classList.toggle('collision-enabled', collisionEnabled);
+            const handle = el.querySelector('.element-handle');
+            if (handle) handle.style.display = editMode ? 'none' : 'block';
+        });
+    }
+
+    function updatePreviewPosition(item) {
+        const el = previewElements[item.id];
+        if (!el) return;
+        el.style.top = item.top + 'px';
+        el.style.left = item.left + 'px';
+        el.style.width = item.width + 'px';
+        el.style.height = item.height + 'px';
+        if (item.bgColor) el.style.background = item.bgColor;
+        if (item.textColor) {
+            const textDiv = el.querySelector('.preview-text');
+            if (textDiv) textDiv.style.color = item.textColor;
+        }
+        // Auto-adjust text size cuando cambia el contenedor
+        if (item.type === 'text') {
+            const textDiv = el.querySelector('.preview-text');
+            adjustTextSizing(item, textDiv);
+        }
+    }
+
+    function updatePreviewContent(item) {
+        const el = previewElements[item.id];
+        if (!el) return;
+        if (item.type === 'image') {
+            const wrapper = el.querySelector('.preview-image');
+            wrapper.innerHTML = '';
+            if (item.content) {
+                const img = document.createElement('img');
+                img.src = item.content;
+                img.alt = 'Imagen de proyecto';
+                wrapper.appendChild(img);
+            } else {
+                wrapper.textContent = 'Pulsa aquí para subir imagen';
+            }
+        } else if (item.type === 'text') {
+            const div = el.querySelector('.preview-text');
+            if (div && div.textContent !== item.content) div.textContent = item.content;
+            if (div && item.textColor) div.style.color = item.textColor;
+        } else if (item.type === 'button') {
+            const btn = el.querySelector('.preview-btn');
+            if (btn) {
+                btn.textContent = item.content;
+                if (item.textColor) btn.style.color = item.textColor;
+            }
+        } else if (item.type === 'tags') {
+            const chipList = el.querySelector('.tag-chip-list');
+            if (chipList) {
+                chipList.innerHTML = '';
+                if (item.selected.length === 0) {
+                    const placeholder = document.createElement('span');
+                    placeholder.className = 'tag-chip';
+                    placeholder.style.background = 'transparent';
+                    placeholder.style.color = '#999';
+                    placeholder.style.boxShadow = 'none';
+                    placeholder.textContent = 'Haz click para buscar etiquetas';
+                    chipList.appendChild(placeholder);
+                } else {
+                    item.selected.forEach(tag => {
+                        const chip = document.createElement('span');
+                        chip.className = 'tag-chip';
+                        chip.innerHTML = `${tag} <button type="button">×</button>`;
+                        chip.querySelector('button').addEventListener('click', () => {
+                            item.selected = item.selected.filter(t => t !== tag);
+                            updatePreviewContent(item);
+                        });
+                        chipList.appendChild(chip);
+                    });
+                }
+            }
+        }
+    }
+
+    buildPreview();
     loadPopularTags();
 
-    // 2. Buscador con filtro del TOP 10
-    const tagInput = document.getElementById("tagInput");
-    const suggestionsBox = document.getElementById("suggestions");
-
-    tagInput.addEventListener("input", (e) => {
-        const value = e.target.value.toLowerCase().trim();
-        suggestionsBox.innerHTML = "";
-        
-        // Filtramos las etiquetas populares que empiecen por lo escrito
-        const filtered = tagsPopularity
-            .filter(t => t.name.startsWith(value))
-            .slice(0, 10); // Siempre mostramos máximo 10
-
-        if (value.length > 0 && filtered.length > 0) {
-            suggestionsBox.style.display = "block";
-            filtered.forEach(tagObj => {
-                const div = document.createElement("div");
-                div.className = "suggestion-item";
-                div.innerHTML = `<span>#${tagObj.name}</span> <span class="tag-count">${tagObj.count} usos</span>`;
-                div.onclick = () => addTag(tagObj.name);
-                suggestionsBox.appendChild(div);
-            });
-        } else {
-            suggestionsBox.style.display = "none";
-        }
+    document.getElementById('addBtn').addEventListener('click', () => {
+        document.querySelector('.add-menu').classList.toggle('open');
     });
 
-    function addTag(tag) {
-        const cleanTag = tag.replace("#", "").trim().toLowerCase();
-        if (cleanTag && !tagsArray.includes(cleanTag)) {
-            tagsArray.push(cleanTag);
-            const span = document.createElement("span");
-            span.className = "tag-item";
-            span.textContent = "#" + cleanTag;
-            document.getElementById("tags").appendChild(span);
+    document.getElementById('addTextBtn').addEventListener('click', () => addElement('text'));
+    document.getElementById('addImageBtn').addEventListener('click', () => addElement('image'));
+    document.getElementById('addButtonBtn').addEventListener('click', () => addElement('button'));
+    document.getElementById('toggleGridBtn').addEventListener('click', () => {
+        gridEnabled = !gridEnabled;
+        document.getElementById('toggleGridBtn').style.opacity = gridEnabled ? 1 : 0.5;
+        document.getElementById('previewEditor').classList.toggle('grid-enabled', gridEnabled);
+    });
+    document.getElementById('toggleCollisionBtn').addEventListener('click', () => {
+        collisionEnabled = !collisionEnabled;
+        document.getElementById('toggleCollisionBtn').style.opacity = collisionEnabled ? 1 : 0.5;
+        document.querySelectorAll('.preview-element').forEach(el => {
+            el.classList.toggle('collision-enabled', collisionEnabled);
+        });
+    });
+    document.getElementById('toggleEditModeBtn').addEventListener('click', () => {
+        editMode = !editMode;
+        document.getElementById('toggleEditModeBtn').style.opacity = editMode ? 1 : 0.5;
+        updateCursor();
+    });
+
+    function addElement(type) {
+        const id = type + Date.now();
+        let newItem;
+        if (type === 'text') {
+            newItem = { id, type, top: 50, left: 50, width: 300, height: 100, content: '', textClass: 'description', bgColor: '#ffffff', textColor: '#1f4021' };
+        } else if (type === 'image') {
+            newItem = { id, type, top: 50, left: 50, width: 300, height: 200, content: '', bgColor: '#ffffff', textColor: '#1f4021' };
+        } else if (type === 'button') {
+            newItem = { id, type, top: 50, left: 50, width: 100, height: 50, content: 'Botón', bgColor: '#ffffff', textColor: '#1f4021' };
         }
-        tagInput.value = "";
-        suggestionsBox.style.display = "none";
+        previewState.elements.push(newItem);
+        buildPreview();
+        document.querySelector('.add-menu').classList.remove('open');
     }
-
-    tagInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            addTag(tagInput.value);
-        }
-    });
 
     // Vista previa imagen
     document.getElementById("fileInput").onchange = (e) => {
@@ -296,8 +1022,11 @@
             const reader = new FileReader();
             reader.onload = (event) => {
                 base64 = event.target.result;
-                const img = document.getElementById("preview");
-                img.src = base64; img.style.display = "block";
+                const imageItem = previewState.elements.find(el => el.id === 'image');
+                if (imageItem) {
+                    imageItem.content = base64;
+                    updatePreviewContent(imageItem);
+                }
             };
             reader.readAsDataURL(file);
         }
@@ -317,15 +1046,33 @@
             const userSnap = await getDoc(doc(db, "users", user.uid));
             if (userSnap.exists()) nombreAutor = userSnap.data().nombre;
 
+            const titleItem = previewState.elements.find(el => el.id === 'title');
+            const descriptionItem = previewState.elements.find(el => el.id === 'description');
+            const tagsItem = previewState.elements.find(el => el.id === 'tags');
+            const imageItem = previewState.elements.find(el => el.id === 'image');
+            const title = titleItem?.content.trim() || '';
+            const description = descriptionItem?.content.trim() || '';
+            const tags = tagsItem?.selected ? tagsItem.selected.map(t => normalizeTagText(t)[0]).filter(Boolean) : [];
+            const image = imageItem?.content || '';
+
+            if (!title || !description || !image) {
+                alert('Debe completar título, descripción e imagen en la tarjeta.');
+                isSubmitting = false;
+                btn.disabled = false;
+                btn.textContent = '🚀 Publicar Proyecto';
+                return;
+            }
+
             await addDoc(collection(db, "proyectos"), {
-                titulo: document.getElementById("titulo").value,
-                descripcion: document.getElementById("descripcion").value,
-                imagen: base64,
+                titulo: title,
+                descripcion: description,
+                imagen: image,
                 nombre: nombreAutor,
                 userId: user.uid,
-                tags: tagsArray,
+                tags: tags,
                 likes: 0,
                 likedBy: [],
+                previewLayout: { elements: previewState.elements.map(el => ({ ...el })) },
                 createdAt: new Date().toISOString()
             });
 
@@ -398,10 +1145,203 @@ function renderSubmenu() {
     });
 }
 
-renderSubmenu();
+    // --- PANEL DE CAPAS ---
+    let selectedLayerId = null;
+    const layersOverlay = document.getElementById('layersOverlay');
+    const layersPanel = document.getElementById('layersPanel');
 
-// Configurar enlaces de sidebar - cerrar al navegar
-const sidebarLinks = document.querySelectorAll('.sidebar a:not(#sideLogout)');
+    function getElementLabel(item) {
+        if (item.type === 'text') return `📝 ${item.textClass || 'Texto'}`;
+        if (item.type === 'image') return '🖼️ Imagen';
+        if (item.type === 'tags') return '🏷️ Etiquetas';
+        if (item.type === 'button') return `🔘 ${item.content}`;
+        return item.id;
+    }
+
+    function buildLayersList() {
+        const list = document.getElementById('layersList');
+        list.innerHTML = '';
+        previewState.elements.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'layer-item';
+            if (item.id === selectedLayerId) div.classList.add('selected');
+            
+            const name = document.createElement('span');
+            name.className = 'layer-item-name';
+            name.textContent = getElementLabel(item);
+            
+            const actions = document.createElement('div');
+            actions.className = 'layer-item-actions';
+            
+            const editBtn = document.createElement('button');
+            editBtn.textContent = '✏️';
+            editBtn.title = 'Editar';
+            editBtn.onclick = (e) => {
+                e.stopPropagation();
+                selectedLayerId = item.id;
+                buildLayersList();
+                buildLayersEditor();
+            };
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = '🗑️';
+            deleteBtn.title = 'Eliminar';
+            deleteBtn.onclick = (e) => {
+                e.stopPropagation();
+                previewState.elements = previewState.elements.filter(el => el.id !== item.id);
+                selectedLayerId = null;
+                buildPreview();
+                buildLayersList();
+                document.getElementById('layersEditor').innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 13px;">Selecciona un elemento para editar</p>';
+            };
+            
+            const upBtn = document.createElement('button');
+            upBtn.textContent = '↑';
+            upBtn.title = 'Traer adelante';
+            upBtn.onclick = (e) => {
+                e.stopPropagation();
+                if (index < previewState.elements.length - 1) {
+                    [previewState.elements[index], previewState.elements[index + 1]] = [previewState.elements[index + 1], previewState.elements[index]];
+                    buildPreview();
+                    buildLayersList();
+                }
+            };
+            
+            const downBtn = document.createElement('button');
+            downBtn.textContent = '↓';
+            downBtn.title = 'Enviar atrás';
+            downBtn.onclick = (e) => {
+                e.stopPropagation();
+                if (index > 0) {
+                    [previewState.elements[index], previewState.elements[index - 1]] = [previewState.elements[index - 1], previewState.elements[index]];
+                    buildPreview();
+                    buildLayersList();
+                }
+            };
+            
+            actions.appendChild(upBtn);
+            actions.appendChild(downBtn);
+            actions.appendChild(deleteBtn);
+            
+            div.appendChild(name);
+            div.appendChild(actions);
+            div.onclick = () => {
+                selectedLayerId = item.id;
+                buildLayersList();
+                buildLayersEditor();
+            };
+            list.appendChild(div);
+        });
+    }
+
+    function buildLayersEditor() {
+        const editor = document.getElementById('layersEditor');
+        if (!selectedLayerId) {
+            editor.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 12px;">Selecciona un elemento para editar</p>';
+            return;
+        }
+        
+        const item = previewState.elements.find(el => el.id === selectedLayerId);
+        if (!item) return;
+        
+        let html = '<div class="editor-section">';
+        html += '<label class="editor-label">Tipo</label>';
+        html += `<div style="color: var(--text-main); font-size: 12px; padding: 4px;">${getElementLabel(item)}</div>`;
+        html += '</div>';
+        
+        if (item.type === 'text' || item.type === 'button') {
+            html += '<div class="editor-section">';
+            html += '<label class="editor-label">Contenido</label>';
+            html += `<input type="text" class="editor-input" id="editorContent" value="${item.content}" placeholder="Contenido">`;
+            html += '</div>';
+        }
+        
+        if (item.type === 'text') {
+            html += '<div class="editor-section">';
+            html += '<label class="editor-label">Estilo</label>';
+            const titleSel = item.textClass === 'title' ? 'selected' : '';
+            const descSel = item.textClass === 'description' ? 'selected' : '';
+            html += `<select class="editor-input" id="editorTextClass">
+                <option value="title" ${titleSel}>Título</option>
+                <option value="description" ${descSel}>Descripción</option>
+            </select>`;
+            html += '</div>';
+        }
+        
+        html += '<div class="editor-section">';
+        html += '<label class="editor-label">Color Fondo</label>';
+        html += `<input type="color" class="color-picker" id="editorBgColor" value="${item.bgColor || '#ffffff'}">`;
+        html += '</div>';
+        
+        if (item.type === 'text' || item.type === 'button') {
+            html += '<div class="editor-section">';
+            html += '<label class="editor-label">Color Texto</label>';
+            html += `<input type="color" class="color-picker" id="editorTextColor" value="${item.textColor || '#1f4021'}">`;
+            html += '</div>';
+        }
+        
+        html += '<div class="editor-section">';
+        html += '<label class="editor-label">Pos X</label>';
+        html += `<input type="number" class="editor-input" id="editorLeft" value="${item.left}" min="0">`;
+        html += '</div>';
+        
+        html += '<div class="editor-section">';
+        html += '<label class="editor-label">Pos Y</label>';
+        html += `<input type="number" class="editor-input" id="editorTop" value="${item.top}" min="0">`;
+        html += '</div>';
+        
+        html += '<div class="editor-section">';
+        html += '<label class="editor-label">Ancho</label>';
+        html += `<input type="number" class="editor-input" id="editorWidth" value="${item.width}" min="50">`;
+        html += '</div>';
+        
+        html += '<div class="editor-section">';
+        html += '<label class="editor-label">Alto</label>';
+        html += `<input type="number" class="editor-input" id="editorHeight" value="${item.height}" min="50">`;
+        html += '</div>';
+        
+        editor.innerHTML = html;
+        
+        // Event listeners para actualizar en tiempo real (con 'input' para cambios inmediatos)
+        const updateItem = () => {
+            if (document.getElementById('editorContent')) item.content = document.getElementById('editorContent').value;
+            if (document.getElementById('editorTextClass')) item.textClass = document.getElementById('editorTextClass').value;
+            if (document.getElementById('editorBgColor')) item.bgColor = document.getElementById('editorBgColor').value;
+            if (document.getElementById('editorTextColor')) item.textColor = document.getElementById('editorTextColor').value;
+            item.left = parseInt(document.getElementById('editorLeft').value) || 0;
+            item.top = parseInt(document.getElementById('editorTop').value) || 0;
+            item.width = Math.max(50, parseInt(document.getElementById('editorWidth').value) || 50);
+            item.height = Math.max(50, parseInt(document.getElementById('editorHeight').value) || 50);
+            updatePreviewPosition(item);
+            if (item.type === 'text' || item.type === 'button') updatePreviewContent(item);
+            adjustTextSizing(item, previewElements[item.id]?.querySelector('.preview-text'));
+        };
+        
+        ['editorContent', 'editorTextClass', 'editorBgColor', 'editorTextColor', 'editorLeft', 'editorTop', 'editorWidth', 'editorHeight'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', updateItem);
+                el.addEventListener('change', updateItem);
+            }
+        });
+    }
+
+    document.getElementById('layersBtn').addEventListener('click', () => {
+        layersOverlay.classList.toggle('open');
+        layersPanel.style.right = layersOverlay.classList.contains('open') ? '0' : '-350px';
+        if (layersOverlay.classList.contains('open')) buildLayersList();
+    });
+
+    document.getElementById('layersCloseBtn').addEventListener('click', () => {
+        layersOverlay.classList.remove('open');
+        layersPanel.style.right = '-350px';
+    });
+
+    layersOverlay.addEventListener('click', () => {
+        layersOverlay.classList.remove('open');
+        layersPanel.style.right = '-350px';
+    });
+const sidebarLinks = document.querySelectorAll('.sidebar a:not(#sideLogout):not(.submenu-toggle)');
 sidebarLinks.forEach(link => {
     link.addEventListener('click', closeMenu);
 });
