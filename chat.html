@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <link rel="stylesheet" href="shared/styles.css">
+</head>
+<body>
+    <header>
+        <div class="nav-top">
+            <div class="header-left">
+                <img src="claro.png" alt="Logo" class="logo-arquero" onclick="window.location.href='inicio.html'">
+            </div>
+            <div class="controls-wrapper">
+                <button class="btn-action" onclick="window.location.href='perfil.html?uid=' + (currentUser ? currentUser.uid : '')">Mi perfil</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 40px 5%;">
+        <div class="chat-card" style="padding: 30px;">
+            <h2 id="chatTitle">Cargando chat...</h2>
+            <p id="chatSubtitle" style="margin: 8px 0 18px; color: var(--text-secondary);"></p>
+            <div id="messagesList" class="message-list"></div>
+            <div class="message-input">
+                <textarea id="messageInput" placeholder="Escribe tu mensaje..."></textarea>
+                <button class="btn-action" id="sendButton">Enviar</button>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { auth, db } from './firebase.js';
+        import { setupSidebar } from './shared/common.js';
+        import {
+            onAuthStateChanged,
+            signOut
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import {
+            collection,
+            doc,
+            getDoc,
+            addDoc,
+            updateDoc,
+            orderBy,
+            query,
+            onSnapshot,
+            serverTimestamp
+        } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        let currentUser = null;
+        const chatId = new URLSearchParams(window.location.search).get('chatId');
+        let chatRef = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            currentUser = user;
+            setupSidebar({
+                config: undefined,
+                onPerfil: () => { window.location.href = `perfil.html?uid=${currentUser.uid}`; },
+                onLogout: async () => {
+                    await signOut(auth);
+                    window.location.href = 'RobinHub.html';
+                },
+                onEdit: () => {},
+                onMore: () => window.location.href = 'ajustes.html'
+            });
+            if (!chatId) {
+                alert('Chat no identificado.');
+                window.location.href = 'inicio.html';
+                return;
+            }
+
+            chatRef = doc(db, 'chats', chatId);
+            const chatSnap = await getDoc(chatRef);
+            if (!chatSnap.exists()) {
+                alert('El chat no existe.');
+                window.location.href = 'inicio.html';
+                return;
+            }
+
+            const chat = chatSnap.data();
+            if (!Array.isArray(chat.participants) || !chat.participants.includes(user.uid)) {
+                alert('No tienes permiso para ver este chat.');
+                window.location.href = 'inicio.html';
+                return;
+            }
+
+            const otherUid = chat.participants.find(id => id !== user.uid) || user.uid;
+            const otherDoc = await getDoc(doc(db, 'users', otherUid));
+            const otherName = otherDoc.exists() ? otherDoc.data().nombre || 'Usuario' : 'Usuario';
+            document.getElementById('chatTitle').textContent = `Chat con ${otherName}`;
+            if (chat.projectTitle) {
+                document.getElementById('chatSubtitle').textContent = `Proyecto: ${chat.projectTitle}`;
+            }
+
+            listenMessages();
+        });
+
+        function renderMessages(snapshot) {
+            const container = document.getElementById('messagesList');
+            container.innerHTML = '';
+            snapshot.forEach(docMsg => {
+                const msg = docMsg.data();
+                const card = document.createElement('div');
+                card.className = 'message-card ' + (msg.senderId === currentUser.uid ? 'self' : 'other');
+                const createdAt = msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleString() : '';
+                card.innerHTML = `
+                    <div>${msg.text || ''}</div>
+                    <div class="message-meta">${msg.senderId === currentUser.uid ? 'Tú' : 'Otro'} · ${createdAt}</div>
+                `;
+                container.appendChild(card);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function listenMessages() {
+            const messagesQuery = query(collection(chatRef, 'messages'), orderBy('createdAt', 'asc'));
+            onSnapshot(messagesQuery, renderMessages);
+        }
+
+        document.getElementById('sendButton').addEventListener('click', async () => {
+            const textArea = document.getElementById('messageInput');
+            const text = textArea.value.trim();
+            if (!text) return;
+            await addDoc(collection(chatRef, 'messages'), {
+                senderId: currentUser.uid,
+                text,
+                createdAt: serverTimestamp(),
+            });
+            await updateDoc(chatRef, {
+                lastMessage: text,
+                lastMessageAt: serverTimestamp(),
+            });
+            textArea.value = '';
+        });
+    </script>
+</body>
+</html>

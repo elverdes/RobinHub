@@ -159,6 +159,7 @@
 
 
     </style>
+    <link rel="stylesheet" href="shared/styles.css">
 </head>
 <body id="bodyTag">
 
@@ -227,6 +228,7 @@
             <button id="likeBtn" class="btn-like">
                 <span id="likeIcon" style="font-size:20px">🤍</span> <span id="likesCount">0</span> Likes
             </button>
+            <button id="requestChatBtn" class="btn-chat" style="display:none;">Solicitar chat</button>
             <div style="font-size: 20px; color: #555; font-weight: bold;">👁️ <span id="visitasCount">0</span> <span style="font-size: 14px; color: #888;">Visualizaciones</span></div>
         </div>
     </div>
@@ -242,7 +244,7 @@
 
 <script type="module">
     import { db, auth } from "./firebase.js";
-    import { doc, onSnapshot, updateDoc, increment, arrayUnion, arrayRemove, getDocs, collection, query, where, limit, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { addDoc, collection, doc, getDoc, getDocs, increment, onSnapshot, query, serverTimestamp, updateDoc, where, limit, arrayRemove, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     // --- CONSEJOS ALEATORIOS ---
@@ -258,7 +260,16 @@
     const projectId = new URLSearchParams(window.location.search).get("id");
     if(!projectId) window.location.href = "inicio.html";
 
+    let currentUser = null;
+    let projectOwnerId = null;
+    let projectTitle = "";
+
     const docRef = doc(db, "proyectos", projectId);
+
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        updateRequestChatButton();
+    });
 
     // Sumar visita una sola vez al cargar
     updateDoc(docRef, { visitas: increment(1) }).catch(()=>{});
@@ -283,6 +294,9 @@
         }
         
         document.getElementById("authorBox").onclick = () => location.href=`perfil.html?uid=${data.userId}`;
+        projectOwnerId = data.userId;
+        projectTitle = data.titulo || '';
+        updateRequestChatButton();
 
         // Renderizar Tags
         const tagsBox = document.getElementById("p-tags");
@@ -435,6 +449,48 @@
             likedBy: isLiked ? arrayRemove(user.uid) : arrayUnion(user.uid)
         });
     };
+
+    document.getElementById('requestChatBtn').onclick = requestChatForProject;
+
+    function updateRequestChatButton() {
+        const btn = document.getElementById("requestChatBtn");
+        if (!btn) return;
+        if (!currentUser || !projectOwnerId || currentUser.uid === projectOwnerId) {
+            btn.style.display = 'none';
+            return;
+        }
+        btn.style.display = 'inline-flex';
+        btn.disabled = false;
+    }
+
+    async function requestChatForProject() {
+        if (!currentUser) {
+            window.location.href = 'login.html';
+            return;
+        }
+        if (!projectOwnerId || currentUser.uid === projectOwnerId) {
+            alert('No puedes solicitar chat en tu propio proyecto.');
+            return;
+        }
+
+        const message = prompt('Escribe un mensaje para solicitar chat con el autor de este proyecto:', 'Hola, me interesa tu proyecto y me gustaría conversar contigo.');
+        if (!message || !message.trim()) return;
+
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        const fromName = userDoc.exists() ? userDoc.data().nombre || currentUser.email : currentUser.email;
+
+        await addDoc(collection(db, 'chatRequests'), {
+            fromUid: currentUser.uid,
+            toUid: projectOwnerId,
+            projectId,
+            projectTitle,
+            message: message.trim(),
+            status: 'pending',
+            createdAt: serverTimestamp(),
+            fromName,
+        });
+        alert('Solicitud de chat enviada. El autor podrá aceptarla o rechazarla desde su perfil.');
+    }
     // --- LÓGICA DE PERSISTENCIA DE TEMA ---
 function aplicarTemaGuardado() {
     const tema = localStorage.getItem('robinTema') || 'claro';

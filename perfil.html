@@ -63,11 +63,94 @@
         .profile-header { background: var(--bg-card); padding: 40px; text-align: center; border-bottom: 1px solid #ddd; color: var(--text-main); }
         .profile-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); }
         .btn-edit { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; display: none; margin-top: 15px; }
+
+        /* Botones con forma de carpeta */
+        .btn-folder {
+            --folder-bg: var(--primary);
+            position: relative;
+            background: var(--folder-bg);
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 8px 18px rgba(27,130,70,0.12);
+        }
+
+        .btn-folder::before {
+            content: "";
+            position: absolute;
+            left: 12px;
+            top: -10px;
+            width: 46px;
+            height: 18px;
+            background: rgba(255,255,255,0.09);
+            border-radius: 4px 6px 0 0;
+            transform: translateY(0);
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.04);
+        }
+
+        .btn-folder.primary { background: var(--primary); }
+        .btn-folder.chats { background: linear-gradient(180deg, var(--primary), #15713a); }
+
+        .btn-folder .title { text-align: center; display: inline-block; min-width: 80px; }
         .container { max-width: 1000px; margin: 20px auto; padding: 0 20px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
         .card { background: var(--bg-card); border-radius: 10px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: var(--text-main); }
         .card img { width: 100%; height: 150px; object-fit: cover; }
         .card-info { padding: 10px; }
+
+        .chat-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(27,130,70,0.12);
+            border-radius: 22px;
+            padding: 18px;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.08);
+        }
+
+        .chat-card h4 {
+            margin: 0 0 10px 0;
+            color: var(--primary);
+        }
+
+        .chat-card p {
+            margin: 6px 0;
+            color: var(--text-secondary);
+        }
+
+        .chat-request-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .chat-request-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .chat-list { display: grid; gap: 16px; }
+
+        .chat-summary {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .chat-status { color: var(--primary); font-weight: 700; }
 
         /* --- LOGO SAGRADO --- */
         .header-left { position: relative; display: flex; align-items: center; }
@@ -159,17 +242,31 @@
     <img id="user-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="profile-img">
     <h1 id="user-name">Cargando...</h1>
     <p id="user-bio">...</p>
-    <button id="editBtn" class="btn-edit" onclick="location.href='editar-perfil.html'">Editar mi perfil</button>
+    <div style="margin-top:12px; display:flex; gap:14px; justify-content:center;">
+        <button id="editBtn" class="btn-edit" onclick="location.href='editar-perfil.html'">Editar mi perfil</button>
+        <button id="btnMyProjects" class="btn-folder primary" style="display:none;">📁 <span class="title">Mis proyectos</span></button>
+        <button id="btnChats" class="btn-folder chats" style="display:none;">💬 <span class="title">Chats</span></button>
+    </div>
 </div>
 
-<div class="container">
+<div id="projectsSection" class="container" style="display:none;">
     <h3>Proyectos de este usuario</h3>
     <div id="user-projects" class="grid"></div>
+    </div>
+
+<div class="container" id="requestSection" style="display:none; margin-top:40px;">
+    <h3>Solicitudes de chat</h3>
+    <div id="chatRequests" class="chat-list"></div>
+</div>
+
+<div class="container" id="myChatsSection" style="display:none; margin-top:40px;">
+    <h3>Mis chats</h3>
+    <div id="chatList" class="chat-list"></div>
 </div>
 
 <script type="module">
     import { db, auth } from "./firebase.js";
-    import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { addDoc, collection, doc, getDoc, getDocs, orderBy, query, serverTimestamp, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     // --- CONSEJOS ALEATORIOS ---
@@ -183,15 +280,18 @@
     document.getElementById("randomTip").textContent = tips[Math.floor(Math.random() * tips.length)];
 
     const viewUid = new URLSearchParams(window.location.search).get("uid");
+    let userProjects = [];
 
     onAuthStateChanged(auth, async (user) => {
-        if (!viewUid) return;
+        if (!user) return; // need an authenticated user to proceed
+
+        const targetUid = viewUid || user.uid;
 
         // Mostrar botón editar solo si es MI perfil
-        if (user && user.uid === viewUid) document.getElementById("editBtn").style.display = "inline-block";
+        if (user.uid === targetUid) document.getElementById("editBtn").style.display = "inline-block";
 
         // Cargar datos
-        const userDoc = await getDoc(doc(db, "users", viewUid));
+        const userDoc = await getDoc(doc(db, "users", targetUid));
         if (userDoc.exists()) {
             const d = userDoc.data();
             document.getElementById("user-name").textContent = d.nombre || "Usuario";
@@ -200,9 +300,11 @@
         }
 
         // Cargar proyectos
-        const q = query(collection(db, "proyectos"), where("userId", "==", viewUid));
+        const q = query(collection(db, "proyectos"), where("userId", "==", targetUid));
         const snap = await getDocs(q);
         const box = document.getElementById("user-projects");
+        box.innerHTML = '';
+        userProjects = [];
         snap.forEach(d => {
             const p = d.data();
             const card = document.createElement("div");
@@ -210,8 +312,146 @@
             card.innerHTML = `<img src="${p.imagen}"><div class="card-info"><h4>${p.titulo}</h4></div>`;
             card.onclick = () => location.href = `proyecto.html?id=${d.id}`;
             box.appendChild(card);
+            userProjects.push(d.id);
         });
+        // Controls: show folder buttons only for my profile, otherwise show projects
+        const btnMyProjects = document.getElementById('btnMyProjects');
+        const btnChats = document.getElementById('btnChats');
+        const projectsSection = document.getElementById('projectsSection');
+
+        if (user.uid === targetUid) {
+            // Profile owner: show controls, hide sections by default
+            document.getElementById("editBtn").style.display = "inline-block";
+            btnMyProjects.style.display = 'inline-block';
+            btnChats.style.display = 'inline-block';
+            projectsSection.style.display = 'none';
+            document.getElementById('requestSection').style.display = 'none';
+            document.getElementById('myChatsSection').style.display = 'none';
+
+            btnMyProjects.onclick = () => {
+                const isVisible = projectsSection.style.display === 'block';
+                projectsSection.style.display = isVisible ? 'none' : 'block';
+                // hide chats when showing projects
+                if (!isVisible) {
+                    document.getElementById('requestSection').style.display = 'none';
+                    document.getElementById('myChatsSection').style.display = 'none';
+                }
+            };
+
+            btnChats.onclick = async () => {
+                // snapshot my projects to localStorage
+                try { localStorage.setItem('myProjectsSnapshot', JSON.stringify(userProjects || [])); } catch (e) {}
+                await loadChatRequests(targetUid);
+                await loadUserChats(targetUid);
+                document.getElementById('requestSection').style.display = 'block';
+                document.getElementById('myChatsSection').style.display = 'block';
+                projectsSection.style.display = 'none';
+            };
+
+        } else {
+            // Viewing someone else's profile: show projects, hide chats and controls
+            btnMyProjects.style.display = 'none';
+            btnChats.style.display = 'none';
+            projectsSection.style.display = 'block';
+            document.getElementById('requestSection').style.display = 'none';
+            document.getElementById('myChatsSection').style.display = 'none';
+        }
     });
+
+    async function loadChatRequests(uid) {
+        const q = query(collection(db, 'chatRequests'), where('toUid', '==', uid), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
+        const snap = await getDocs(q);
+        const container = document.getElementById('chatRequests');
+        container.innerHTML = '';
+
+        snap.forEach(docReq => {
+            const req = docReq.data();
+            const card = document.createElement('div');
+            card.className = 'chat-card';
+            card.innerHTML = `
+                <div class="chat-request-meta">
+                    <div><strong>${req.fromName || 'Usuario'}</strong> solicitó chat por <strong>${req.projectTitle || 'un proyecto'}</strong></div>
+                    <div class="chat-status">Pendiente</div>
+                </div>
+                <p>${req.message}</p>
+                <div class="chat-request-actions">
+                    <button class="btn-action" id="accept-${docReq.id}">Aceptar</button>
+                    <button class="btn-danger" id="reject-${docReq.id}">Rechazar</button>
+                </div>
+            `;
+
+            container.appendChild(card);
+
+            document.getElementById(`accept-${docReq.id}`).onclick = async () => {
+                await acceptChatRequest(docReq.id, req);
+                await loadChatRequests(uid);
+                await loadUserChats(uid);
+            };
+            document.getElementById(`reject-${docReq.id}`).onclick = async () => {
+                await rejectChatRequest(docReq.id);
+                await loadChatRequests(uid);
+            };
+        });
+    }
+
+    async function loadUserChats(uid) {
+        const q = query(collection(db, 'chats'), where('participants', 'array-contains', uid), orderBy('lastMessageAt', 'desc'));
+        const snap = await getDocs(q);
+        const container = document.getElementById('chatList');
+        container.innerHTML = '';
+
+        snap.forEach(async chatDoc => {
+            const chat = chatDoc.data();
+            const otherUid = (chat.participants || []).find(id => id !== uid) || uid;
+            const otherDoc = await getDoc(doc(db, 'users', otherUid));
+            const otherName = otherDoc.exists() ? otherDoc.data().nombre || 'Usuario' : 'Usuario';
+
+            const card = document.createElement('div');
+            card.className = 'chat-card';
+            card.innerHTML = `
+                <div class="chat-request-meta">
+                    <div><strong>Chat con ${otherName}</strong></div>
+                    <div class="chat-status">${chat.projectTitle || 'Conversación'}</div>
+                </div>
+                <p>${chat.lastMessage || 'Sin mensajes aún'}</p>
+                <div class="chat-summary">Última vez: ${chat.lastMessageAt ? new Date(chat.lastMessageAt.toDate()).toLocaleString() : 'No hay actividad'}</div>
+            `;
+            card.onclick = () => location.href = `chat.html?chatId=${chatDoc.id}`;
+            container.appendChild(card);
+        });
+    }
+
+    async function acceptChatRequest(requestId, req) {
+        const chatRef = await addDoc(collection(db, 'chats'), {
+            participants: [req.fromUid, req.toUid],
+            projectId: req.projectId || null,
+            projectTitle: req.projectTitle || null,
+            createdAt: serverTimestamp(),
+            lastMessage: req.message || 'Solicitud aceptada',
+            lastMessageAt: serverTimestamp(),
+        });
+
+        await updateDoc(doc(db, 'chatRequests', requestId), {
+            status: 'accepted',
+            chatId: chatRef.id,
+        });
+
+        await addDoc(collection(db, 'chats', chatRef.id, 'messages'), {
+            senderId: req.fromUid,
+            text: req.message || 'Hola, quisiera conversar contigo.',
+            createdAt: serverTimestamp(),
+            type: 'request',
+        });
+
+        alert('Solicitud aceptada. Se ha creado el chat y estará disponible en tu perfil.');
+    }
+
+    async function rejectChatRequest(requestId) {
+        await updateDoc(doc(db, 'chatRequests', requestId), {
+            status: 'rejected',
+        });
+        alert('Solicitud rechazada.');
+    }
     // --- LÓGICA DE PERSISTENCIA DE TEMA ---
 function aplicarTemaGuardado() {
     const tema = localStorage.getItem('robinTema') || 'claro';
