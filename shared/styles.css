@@ -179,7 +179,7 @@ header {
 .flecha-container {
     position: absolute;
     left: 75px;
-    top: 5px;
+    top: -18px;
     width: 80px;
     height: 50px;
     display: flex;
@@ -272,21 +272,21 @@ header {
 .edit-panel {
     position: fixed;
     top: 0;
-    left: calc(var(--sidebar-width) * -1);
+    right: calc(var(--sidebar-width) * -1);
     width: var(--sidebar-width);
     height: 100%;
     background: rgba(240, 245, 242, 0.95);
     backdrop-filter: blur(10px);
-    z-index: 1999;
+    z-index: 3000;
     transition: 0.6s cubic-bezier(0.77, 0, 0.175, 1);
-    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
     padding: 150px 25px 20px 25px;
     box-sizing: border-box;
     color: #2c3e50;
 }
 
-.menu-open .edit-panel.active {
-    left: var(--sidebar-width);
+.edit-panel.active {
+    right: 0;
 }
 
 .edit-item {

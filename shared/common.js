@@ -7,13 +7,37 @@ const defaultMenuConfig = [
 
 function loadMenuConfig() {
     const raw = localStorage.getItem('robinMenuConfig');
-    if (!raw) return defaultMenuConfig.map(item => ({ ...item }));
-    try {
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : defaultMenuConfig.map(item => ({ ...item }));
-    } catch {
+    let parsed;
+
+    if (raw) {
+        try {
+            parsed = JSON.parse(raw);
+        } catch {
+            parsed = null;
+        }
+    }
+
+    if (!Array.isArray(parsed)) {
         return defaultMenuConfig.map(item => ({ ...item }));
     }
+
+    const merged = defaultMenuConfig.map(defaultItem => {
+        const savedItem = parsed.find(saved => saved.id === defaultItem.id);
+        return {
+            ...defaultItem,
+            visible: savedItem?.visible ?? defaultItem.visible,
+            label: savedItem?.label ?? defaultItem.label,
+            lock: defaultItem.lock
+        };
+    });
+
+    if (!merged.some(item => item.visible)) {
+        const resetConfig = defaultMenuConfig.map(item => ({ ...item }));
+        saveMenuConfig(resetConfig);
+        return resetConfig;
+    }
+
+    return merged;
 }
 
 function saveMenuConfig(config) {
@@ -42,7 +66,11 @@ function toggleMenu() {
 }
 
 function toggleSubmenu() {
-    document.getElementById('submenuAjustes')?.classList.toggle('submenu-active');
+    const container = document.getElementById('submenuAjustes');
+    if (!container) return;
+    const isExpanded = container.classList.toggle('submenu-active');
+    container.style.overflow = 'hidden';
+    container.style.maxHeight = isExpanded ? `${container.scrollHeight}px` : '0';
 }
 
 function closeMenu() {

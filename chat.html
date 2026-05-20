@@ -6,15 +6,42 @@
     <title>Chat</title>
     <link rel="stylesheet" href="shared/styles.css">
 </head>
-<body>
+<body id="bodyTag">
+    <div id="editPanel" class="edit-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+            <h3 style="margin:0;">Configurar Menú</h3>
+            <button onclick="toggleEditPanel()" style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-main);">✕</button>
+        </div>
+        <div id="editList"></div>
+        <button onclick="toggleEditPanel()" style="width:100%; background:var(--primary); color:white; border:none; padding:12px; border-radius:10px; margin-top:20px; font-weight:bold; cursor:pointer;">Cerrar y Guardar</button>
+    </div>
+
+    <div id="mySidebar" class="sidebar">
+        <a href="#" id="sidePerfil">👤 Mi Perfil</a>
+        <a href="inicio.html">🌲 El Bosque</a>
+        <a href="publicar.html">🚀 Publicar Idea</a>
+        <hr style="border:0; border-top:1px solid rgba(128,128,128,0.2); margin:15px 25px;">
+        <a class="submenu-toggle" onclick="event.preventDefault(); toggleSubmenu()">⚙️ Ajustes ▾</a>
+        <div id="submenuAjustes" class="submenu"></div>
+        <a href="sugerencias.html">💡 Sugerencias</a>
+        <a href="#" id="sideLogout" style="color: #ff4757;">🚪 Cerrar Sesión</a>
+    </div>
+
     <header>
         <div class="nav-top">
             <div class="header-left">
-                <img src="claro.png" alt="Logo" class="logo-arquero" onclick="window.location.href='inicio.html'">
+                <img src="182 sin título_20260415212120.png" class="logo-arquero" onclick="toggleMenu()">
+                <div class="flecha-container" onclick="toggleMenu()">
+                    <div class="flecha"></div>
+                </div>
             </div>
             <div class="controls-wrapper">
                 <button class="btn-action" onclick="window.location.href='perfil.html?uid=' + (currentUser ? currentUser.uid : '')">Mi perfil</button>
             </div>
+        </div>
+        <div class="nav-bottom">
+            <div><span class="brand-text-bottom">obinHub</span></div>
+            <div class="consejo-texto" id="randomTip">Cargando conversación...</div>
         </div>
     </header>
 
@@ -32,7 +59,7 @@
 
     <script type="module">
         import { auth, db } from './firebase.js';
-        import { setupSidebar } from './shared/common.js';
+        import { applySavedTheme, toggleTheme, toggleMenu, toggleSubmenu, loadMenuConfig, setupSidebar, createEditPanel, renderSubmenu } from './shared/common.js';
         import {
             onAuthStateChanged,
             signOut
@@ -52,6 +79,20 @@
         let currentUser = null;
         const chatId = new URLSearchParams(window.location.search).get('chatId');
         let chatRef = null;
+        const tips = [
+            "Este chat es privado entre tú y el creador.",
+            "Puedes enviar mensajes rápidos y continuos.",
+            "Recuerda ser amable y claro en tus respuestas."
+        ];
+        const menuConfig = loadMenuConfig();
+        window.toggleMenu = toggleMenu;
+        window.toggleSubmenu = toggleSubmenu;
+        window.toggleTheme = toggleTheme;
+        window.toggleEditPanel = () => {
+            const editPanel = document.getElementById('editPanel');
+            editPanel.classList.toggle('active');
+            renderMenuConfig();
+        };
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
@@ -60,15 +101,16 @@
             }
             currentUser = user;
             setupSidebar({
-                config: undefined,
+                config: menuConfig,
                 onPerfil: () => { window.location.href = `perfil.html?uid=${currentUser.uid}`; },
                 onLogout: async () => {
                     await signOut(auth);
                     window.location.href = 'RobinHub.html';
                 },
-                onEdit: () => {},
+                onEdit: window.toggleEditPanel,
                 onMore: () => window.location.href = 'ajustes.html'
             });
+            renderMenuConfig();
             if (!chatId) {
                 alert('Chat no identificado.');
                 window.location.href = 'inicio.html';
@@ -138,6 +180,18 @@
             });
             textArea.value = '';
         });
+
+        function renderMenuConfig() {
+            renderSubmenu({
+                config: menuConfig,
+                onEdit: window.toggleEditPanel,
+                onMore: () => window.location.href = 'ajustes.html'
+            });
+            createEditPanel(menuConfig, 'editList', renderMenuConfig);
+        }
+
+        applySavedTheme();
+        document.getElementById('randomTip').textContent = tips[Math.floor(Math.random() * tips.length)];
     </script>
 </body>
 </html>

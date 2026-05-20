@@ -81,7 +81,7 @@
 
         /* --- FLECHA --- */
         .flecha-container {
-            position: absolute; left: 75px; top: 5px;
+            position: absolute; left: 75px; top: -18px;
             width: 80px; height: 50px; display: flex; align-items: center; justify-content: center;
             cursor: pointer; opacity: 0; pointer-events: none;
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2500;
@@ -103,6 +103,44 @@
         .submenu { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: rgba(0, 0, 0, 0.05); }
         .submenu-active { max-height: 500px; }
         .submenu a { padding: 12px 50px; font-size: 15px; opacity: 0.8; }
+
+        .edit-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: min(360px, 100%);
+            height: 100vh;
+            overflow-y: auto;
+            background: var(--bg-card);
+            box-shadow: -14px 0 40px rgba(0,0,0,0.16);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 3000;
+            padding: 24px;
+        }
+        .edit-panel.active {
+            transform: translateX(0);
+        }
+        .edit-panel h3 {
+            margin: 0 0 18px;
+            color: var(--primary);
+            font-size: 22px;
+        }
+        .edit-panel .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        .edit-panel #editList {
+            display: grid;
+            gap: 12px;
+            margin-top: 18px;
+        }
 [data-theme="dark"] {
     --bg-card: #1a1a1a;
     --text-main: #f0f0f0;
@@ -127,6 +165,12 @@
     </style>
 </head>
 <body id="bodyTag">
+
+<div id="editPanel" class="edit-panel" hidden>
+    <button class="close-btn" onclick="toggleEditPanel()">✕</button>
+    <h3>Editar ajustes rápidos</h3>
+    <div id="editList"></div>
+</div>
 
 <header>
     <div class="nav-top">
@@ -176,12 +220,49 @@
 <script type="module">
     import { db, auth } from "./firebase.js";
     import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { applySavedTheme, toggleTheme, toggleMenu, toggleSubmenu, loadMenuConfig, setupSidebar, createEditPanel, renderSubmenu } from "./shared/common.js";
+
+    const menuConfig = loadMenuConfig();
+    window.toggleMenu = toggleMenu;
+    window.toggleSubmenu = toggleSubmenu;
+    window.toggleTheme = toggleTheme;
+    window.toggleEditPanel = () => {
+        const panel = document.getElementById('editPanel');
+        if (!panel) return;
+        const active = panel.classList.toggle('active');
+        panel.hidden = !active;
+    };
+
+    function renderMenuConfig() {
+        renderSubmenu({
+            config: menuConfig,
+            onEdit: window.toggleEditPanel,
+            onMore: () => window.location.href = 'ajustes.html',
+            onTheme: toggleTheme
+        });
+        createEditPanel(menuConfig, 'editList', renderMenuConfig);
+    }
+
+    applySavedTheme();
+    renderMenuConfig();
 
     let fotoBase64 = "";
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) { window.location.href = "login.html"; return; }
+
+        setupSidebar({
+            config: menuConfig,
+            onPerfil: () => { window.location.href = `perfil.html?uid=${user.uid}`; },
+            onLogout: async () => {
+                await signOut(auth);
+                window.location.href = 'RobinHub.html';
+            },
+            onEdit: window.toggleEditPanel,
+            onMore: () => window.location.href = 'ajustes.html'
+        });
+        renderMenuConfig();
 
         // Cargar datos actuales
         const docRef = doc(db, "users", user.uid);
@@ -221,84 +302,6 @@
             btn.disabled = false;
         }
     };
-    // --- LÓGICA DE PERSISTENCIA DE TEMA ---
-function aplicarTemaGuardado() {
-    const tema = localStorage.getItem('robinTema') || 'claro';
-    const body = document.body;
-    
-    if (tema === 'oscuro') {
-        document.documentElement.setAttribute("data-theme", "dark");
-        body.style.backgroundImage = "url('oscuro.png')";
-    } else {
-        document.documentElement.removeAttribute("data-theme");
-        body.style.backgroundImage = "url('claro.png')";
-    }
-}
-
-// Función para cambiar el tema (llámala desde tu botón del menú)
-window.toggleTheme = () => {
-    const esOscuro = document.documentElement.getAttribute("data-theme") === "dark";
-    const nuevoTema = esOscuro ? 'claro' : 'oscuro';
-    
-    localStorage.setItem('robinTema', nuevoTema);
-    aplicarTemaGuardado();
-};
-
-// Ejecutar inmediatamente al cargar la página
-aplicarTemaGuardado();
-
-// --- FUNCIONES PARA SIDEBAR ---
-window.toggleMenu = () => document.getElementById("bodyTag").classList.toggle("menu-open");
-window.toggleSubmenu = () => document.getElementById("submenuAjustes").classList.toggle("submenu-active");
-
-// Cerrar sidebar al navegar
-function closeMenu() {
-    document.getElementById("bodyTag").classList.remove("menu-open");
-}
-
-// Configurar sidebar
-const DEFAULT_CONFIG = [
-    { id: 'tema', label: '🌓 Modo claro/oscuro', visible: true },
-    { id: 'notif', label: '🔔 Notificaciones', visible: true },
-    { id: 'edit', label: '✏️ Editar', visible: true },
-    { id: 'more', label: '⚙️ Más ajustes', visible: true }
-];
-
-let menuConfig = JSON.parse(localStorage.getItem('robinMenuConfig')) || DEFAULT_CONFIG;
-
-function renderSubmenu() {
-    const container = document.getElementById("submenuAjustes");
-    if(!container) return;
-    container.innerHTML = "";
-    menuConfig.forEach(item => {
-        if (item.visible) {
-            const a = document.createElement("a");
-            a.textContent = item.label;
-            a.onclick = () => {
-                if (item.id === 'tema') toggleTheme();
-                else if (item.id === 'more') { closeMenu(); window.location.href = 'ajustes.html'; }
-            };
-            container.appendChild(a);
-        }
-    });
-}
-
-renderSubmenu();
-
-// Configurar enlaces de sidebar - cerrar al navegar
-const sidebarLinks = document.querySelectorAll('.sidebar a:not(#sideLogout):not(.submenu-toggle)');
-sidebarLinks.forEach(link => {
-    link.addEventListener('click', closeMenu);
-});
-
-// Configurar enlaces de sidebar especiales
-document.getElementById("sidePerfil").onclick = () => { closeMenu(); window.location.href = `perfil.html?uid=${auth.currentUser?.uid}`; };
-document.getElementById("sideLogout").onclick = async () => {
-    closeMenu();
-    await signOut(auth);
-    window.location.href = "RobinHub.html";
-};
-
 </script>
 </body>
 </html>

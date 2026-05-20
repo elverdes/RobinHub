@@ -121,7 +121,7 @@
 
         /* --- FLECHA --- */
         .flecha-container {
-            position: absolute; left: 75px; top: 5px;
+            position: absolute; left: 75px; top: -18px;
             width: 80px; height: 50px; display: flex; align-items: center; justify-content: center;
             cursor: pointer; opacity: 0; pointer-events: none;
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2500;
@@ -143,6 +143,45 @@
         .submenu { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: rgba(0, 0, 0, 0.05); }
         .submenu-active { max-height: 500px; }
         .submenu a { padding: 12px 50px; font-size: 15px; opacity: 0.8; }
+
+        .edit-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: min(360px, 100%);
+            height: 100vh;
+            overflow-y: auto;
+            background: var(--bg-card);
+            box-shadow: -14px 0 40px rgba(0,0,0,0.16);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 3000;
+            padding: 24px;
+        }
+        .edit-panel.active {
+            transform: translateX(0);
+        }
+        .edit-panel h3 {
+            margin: 0 0 18px;
+            color: var(--primary);
+            font-size: 22px;
+        }
+        .edit-panel .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        .edit-panel .edit-panel-body {
+            margin-top: 16px;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
 [data-theme="dark"] {
     --bg-card: #1a1a1a;
     --text-main: #f0f0f0;
@@ -166,6 +205,15 @@
     </style>
 </head>
 <body id="bodyTag">
+
+<div id="editPanel" class="edit-panel" hidden>
+    <button class="close-btn" onclick="toggleEditPanel()">✕</button>
+    <h3>Editar ajustes rápidos</h3>
+    <div class="edit-panel-body">
+        <p>Usa el botón Editar en el menú de ajustes para abrir este panel.</p>
+        <p>Puedes cerrar la vista con la X o seleccionar otra opción del menú.</p>
+    </div>
+</div>
 
 <header>
     <div class="nav-top">
@@ -300,6 +348,13 @@ window.toggleTheme = () => {
     aplicarTemaGuardado();
 };
 
+window.toggleEditPanel = () => {
+    const panel = document.getElementById('editPanel');
+    if (!panel) return;
+    const active = panel.classList.toggle('active');
+    panel.hidden = !active;
+};
+
 // Ejecutar inmediatamente al cargar la página
 aplicarTemaGuardado();
 
@@ -314,13 +369,34 @@ function closeMenu() {
 
 // Configurar sidebar
 const DEFAULT_CONFIG = [
-    { id: 'tema', label: '🌓 Modo claro/oscuro', visible: true },
-    { id: 'notif', label: '🔔 Notificaciones', visible: true },
-    { id: 'edit', label: '✏️ Editar', visible: true },
-    { id: 'more', label: '⚙️ Más ajustes', visible: true }
+    { id: 'tema', label: '🌓 Modo claro/oscuro', visible: true, lock: false },
+    { id: 'notif', label: '🔔 Notificaciones', visible: true, lock: false },
+    { id: 'edit', label: '✏️ Editar', visible: true, lock: true },
+    { id: 'more', label: '⚙️ Más ajustes', visible: true, lock: true }
 ];
 
-let menuConfig = JSON.parse(localStorage.getItem('robinMenuConfig')) || DEFAULT_CONFIG;
+function loadLocalMenuConfig() {
+    const raw = localStorage.getItem('robinMenuConfig');
+    if (!raw) return DEFAULT_CONFIG.map(item => ({ ...item }));
+    try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return DEFAULT_CONFIG.map(item => ({ ...item }));
+
+        return DEFAULT_CONFIG.map(defaultItem => {
+            const savedItem = parsed.find(saved => saved.id === defaultItem.id);
+            return {
+                ...defaultItem,
+                visible: savedItem?.visible ?? defaultItem.visible,
+                label: savedItem?.label ?? defaultItem.label,
+                lock: defaultItem.lock
+            };
+        });
+    } catch {
+        return DEFAULT_CONFIG.map(item => ({ ...item }));
+    }
+}
+
+let menuConfig = loadLocalMenuConfig();
 
 function renderSubmenu() {
     const container = document.getElementById("submenuAjustes");
@@ -332,6 +408,7 @@ function renderSubmenu() {
             a.textContent = item.label;
             a.onclick = () => {
                 if (item.id === 'tema') toggleTheme();
+                else if (item.id === 'edit') toggleEditPanel();
                 else if (item.id === 'more') { closeMenu(); window.location.href = 'ajustes.html'; }
             };
             container.appendChild(a);
