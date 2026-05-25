@@ -60,9 +60,191 @@
         /* --- GRID Y CONTROLES --- */
         .controls-wrapper { display: flex; align-items: center; gap: 15px; flex-grow: 1; margin-left: 100px; }
         .back-link { text-decoration: none; color: white; font-weight: bold; font-size: 14px; display: inline-block; }
-        .profile-header { background: var(--bg-card); padding: 40px; text-align: center; border-bottom: 1px solid #ddd; color: var(--text-main); }
-        .profile-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); }
-        .btn-edit { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; display: none; margin-top: 15px; }
+        .profile-header {
+            background: var(--bg-card);
+            padding: 40px 32px;
+            border-bottom: 1px solid #ddd;
+            color: var(--text-main);
+            max-width: 1040px;
+            margin: 20px auto 0;
+            border-radius: 24px;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.08);
+        }
+        .profile-hero {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 26px;
+            align-items: center;
+            text-align: left;
+        }
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary);
+        }
+        .profile-main {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .profile-main-top {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .profile-main h1 {
+            margin: 0;
+            font-size: 2.4rem;
+        }
+        .cv-toggle {
+            width: 52px;
+            height: 52px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            border: 1px solid rgba(27,130,70,0.22);
+            background: var(--bg-card);
+            color: var(--primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+        }
+        .cv-toggle:hover {
+            background: rgba(27,130,70,0.08);
+        }
+        .profile-main p {
+            margin: 0;
+            line-height: 1.7;
+            max-width: 780px;
+        }
+        .links-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .links-row .link-card { background: rgba(27,130,70,0.08); color: var(--primary); padding: 10px 14px; border-radius: 999px; border: 1px solid rgba(27,130,70,0.2); display: inline-flex; align-items: center; gap: 6px; }
+        .link-card:hover { transform: none; box-shadow: none; }
+        .link-card a { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .profile-hero { display: grid; grid-template-columns: 150px minmax(320px,1fr) 180px; gap: 24px; align-items: start; }
+        .profile-skill-stack { display: grid; gap: 10px; justify-self: end; }
+        .skill-stack { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+        .skill-stack .skill-badge { width: max-content; padding: 10px 14px; border-radius: 999px; background: rgba(27,130,70,0.08); border: 1px solid rgba(27,130,70,0.22); }
+        .profile-row { display: grid; gap: 22px; margin-top: 30px; }
+        .studies-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+        .study-card { background: var(--bg-card); padding: 16px; border-radius: 16px; border: 1px solid rgba(27,130,70,0.15); box-shadow: 0 1px 10px rgba(0,0,0,0.05); }
+        .study-card strong { color: var(--primary); font-size: 15px; }
+        .study-card p { margin: 6px 0 0; color: var(--text-secondary); font-size: 14px; }
+        .popover-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 6000;
+            padding: 18px;
+        }
+        .popover-modal[hidden] { display: none; }
+        .popover-card {
+            width: min(480px, 100%);
+            max-height: 80vh;
+            background: var(--bg-card);
+            border-radius: 18px;
+            overflow-y: auto;
+            padding: 18px;
+            box-shadow: 0 20px 45px rgba(0,0,0,0.28);
+            position: relative;
+        }
+        .popover-card h4 {
+            margin: 0 0 14px;
+            color: var(--primary);
+            font-size: 1.05rem;
+        }
+        .popover-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.9);
+            color: var(--primary);
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .popover-items { display: grid; gap: 12px; }
+        .popover-item { background: rgba(27,130,70,0.08); padding: 12px 14px; border-radius: 14px; color: var(--text-main); }
+        .popover-item a { word-break: break-word; }
+        .skill-stack .skill-badge { width: max-content; padding: 10px 14px; border-radius: 999px; background: rgba(27,130,70,0.08); border: 1px solid rgba(27,130,70,0.22); }
+        .profile-row { display: grid; gap: 22px; margin-top: 30px; }
+        .studies-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+        .study-card { background: var(--bg-card); padding: 16px; border-radius: 16px; border: 1px solid rgba(27,130,70,0.15); box-shadow: 0 1px 10px rgba(0,0,0,0.05); }
+        .study-card strong { color: var(--primary); font-size: 15px; }
+        .study-card p { margin: 6px 0 0; color: var(--text-secondary); font-size: 14px; }
+        .cv-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            padding: 20px;
+        }
+        .cv-modal[hidden] { display: none; }
+        .cv-modal-content {
+            width: min(960px, 100%);
+            max-height: 90vh;
+            background: var(--bg-card);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.3);
+        }
+        .cv-modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 38px;
+            height: 38px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.9);
+            color: var(--primary);
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 2;
+        }
+        .cv-modal embed {
+            width: 100%;
+            height: 85vh;
+            display: block;
+        }
+        .profile-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: flex-start;
+            margin-top: 28px;
+        }
+        .profile-actions .btn-folder { min-width: 180px; }
+        @media (max-width: 900px) {
+            .profile-hero { grid-template-columns: 1fr; text-align: center; }
+            .profile-main { align-items: center; }
+            .profile-skill-stack { justify-self: center; }
+            .profile-row { grid-template-columns: 1fr; }
+            .profile-actions { justify-content: center; }
+        }
+        @media (max-width: 640px) {
+            .profile-header { padding: 28px 18px; }
+            .profile-row { gap: 16px; }
+        }
 
         /* Botones con forma de carpeta */
         .btn-folder {
@@ -275,7 +457,7 @@
     <a href="publicar.html">🚀 Publicar Idea</a>
     <hr style="border:0; border-top:1px solid rgba(128,128,128,0.2); margin:15px 25px;">
     
-    <a class="submenu-toggle" onclick="event.preventDefault(); event.stopPropagation(); toggleSubmenu()">⚙️ Ajustes ▾</a>
+    <a href="#" class="submenu-toggle">⚙️ Ajustes ▾</a>
     <div id="submenuAjustes" class="submenu"></div>
 
     <a href="sugerencias.html">💡 Sugerencias</a>
@@ -283,10 +465,43 @@
 </div>
 
 <div class="profile-header">
-    <img id="user-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="profile-img">
-    <h1 id="user-name">Cargando...</h1>
-    <p id="user-bio">...</p>
-    <div style="margin-top:12px; display:flex; gap:14px; justify-content:center;">
+    <div class="profile-hero">
+        <img id="user-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="profile-img">
+        <div class="profile-main">
+            <div class="profile-main-top">
+                <h1 id="user-name">Cargando...</h1>
+                <button id="cvToggle" class="cv-toggle" style="display:none;">CV</button>
+            </div>
+            <p id="user-bio">...</p>
+            <div id="linksRow" class="links-row" style="display:none"></div>
+        </div>
+        <div class="profile-skill-stack" style="display:none;">
+            <div id="skillsList" class="skill-stack"></div>
+        </div>
+    </div>
+
+    <div id="profile-row" class="profile-row" style="display:none;">
+        <div id="studiesSection" class="studies-panel" style="display:none;">
+            <div id="studiesList" class="studies-list"></div>
+        </div>
+    </div>
+
+    <div id="popoverModal" class="popover-modal" hidden>
+        <div class="popover-card">
+            <button id="popoverClose" class="popover-close">✕</button>
+            <h4 id="popoverTitle">Más información</h4>
+            <div id="popoverItems" class="popover-items"></div>
+        </div>
+    </div>
+
+    <div id="cvModal" class="cv-modal" hidden>
+        <div class="cv-modal-content">
+            <button id="cvClose" class="cv-modal-close">✕</button>
+            <embed id="cvEmbed" src="" type="application/pdf">
+        </div>
+    </div>
+
+    <div class="profile-actions">
         <button id="editBtn" class="btn-edit" onclick="location.href='editar-perfil.html'">Editar mi perfil</button>
         <button id="btnMyProjects" class="btn-folder primary" style="display:none;">📁 <span class="title">Mis proyectos</span></button>
         <button id="btnChats" class="btn-folder chats" style="display:none;">💬 <span class="title">Chats</span></button>
@@ -381,6 +596,112 @@
             document.getElementById("user-name").textContent = d.nombre || "Usuario";
             document.getElementById("user-bio").textContent = d.bio || "Sin descripción";
             if (d.foto) document.getElementById("user-img").src = d.foto;
+
+            let hasRowInfo = false;
+            const skillStack = document.getElementById("skillsList");
+            const profileSkillStack = document.querySelector(".profile-skill-stack");
+            const linksRow = document.getElementById("linksRow");
+            const profileRow = document.getElementById("profile-row");
+            const cvToggle = document.getElementById("cvToggle");
+            const cvModal = document.getElementById("cvModal");
+            const cvEmbed = document.getElementById("cvEmbed");
+            const cvClose = document.getElementById("cvClose");
+            const popoverModal = document.getElementById("popoverModal");
+            const popoverClose = document.getElementById("popoverClose");
+            const popoverTitle = document.getElementById("popoverTitle");
+            const popoverItems = document.getElementById("popoverItems");
+
+            // Mostrar habilidades en columna superior derecha
+            if (d.habilidades && d.habilidades.length > 0) {
+                const visibleSkills = d.habilidades.slice(0, 4);
+                const extraSkills = d.habilidades.slice(4);
+                skillStack.innerHTML = visibleSkills.map(skill =>
+                    `<div class="skill-badge">${skill}</div>`
+                ).join("");
+                if (extraSkills.length) {
+                    window.profileOverflowData = window.profileOverflowData || {};
+                    window.profileOverflowData.habilidades = extraSkills;
+                    skillStack.innerHTML += `<div class="skill-badge" style="cursor:pointer; background: rgba(27,130,70,0.12); border-color: rgba(27,130,70,0.3);" onclick="window.showPopover('Habilidades', window.profileOverflowData.habilidades)">y más</div>`;
+                }
+                profileSkillStack.style.display = "grid";
+            }
+
+            // Mostrar enlaces como etiquetas debajo de la bio
+            if (d.enlaces && d.enlaces.length > 0) {
+                const visibleLinks = d.enlaces.slice(0, 3);
+                const extraLinks = d.enlaces.slice(3);
+                linksRow.innerHTML = visibleLinks.map(link => {
+                    const displayName = link.nombre.length > 17 ? link.nombre.slice(0, 17) + '…' : link.nombre;
+                    return `<div class="link-card"><a title="${link.nombre}" href="${link.url}" target="_blank" rel="noopener noreferrer">${displayName}</a></div>`;
+                }).join("");
+                if (extraLinks.length) {
+                    window.profileOverflowData = window.profileOverflowData || {};
+                    window.profileOverflowData.enlaces = extraLinks;
+                    linksRow.innerHTML += `<div class="link-card" style="cursor:pointer; background: rgba(27,130,70,0.12); border-color: rgba(27,130,70,0.3);" onclick="window.showPopover('Enlaces', window.profileOverflowData.enlaces)">y más</div>`;
+                }
+                linksRow.style.display = "flex";
+            }
+
+            // Mostrar estudios en la fila inferior
+            if (d.estudios && d.estudios.length > 0) {
+                const visibleStudies = d.estudios.slice(0, 3);
+                const extraStudies = d.estudios.slice(3);
+                const studiesList = document.getElementById("studiesList");
+                studiesList.innerHTML = visibleStudies.map(study =>
+                    `<div class="study-card">
+                        <strong>${study.degree}</strong>
+                        <p>${study.institution}</p>
+                        <p style="font-size: 12px; color: var(--text-secondary);">Finalizado: ${study.year}</p>
+                    </div>`
+                ).join("");
+                if (extraStudies.length) {
+                    window.profileOverflowData = window.profileOverflowData || {};
+                    window.profileOverflowData.estudios = extraStudies;
+                    studiesList.innerHTML += `<div class="study-card" style="cursor:pointer; background: rgba(27,130,70,0.08); border-color: rgba(27,130,70,0.3);" onclick="window.showPopover('Estudios', window.profileOverflowData.estudios)"><strong>y más</strong><p>Ver las demás fichas</p></div>`;
+                }
+                document.getElementById("studiesSection").style.display = "block";
+                profileRow.style.display = "grid";
+            }
+
+            // Mostrar botón CV como ventana emergente
+            if (d.cv && d.cv.length > 0) {
+                cvToggle.style.display = "inline-flex";
+                cvToggle.onclick = () => {
+                    cvEmbed.src = d.cv;
+                    cvModal.hidden = false;
+                };
+                cvClose.onclick = () => {
+                    cvModal.hidden = true;
+                };
+                cvModal.onclick = (event) => {
+                    if (event.target === cvModal) cvModal.hidden = true;
+                };
+            }
+
+            popoverClose.onclick = () => {
+                popoverModal.hidden = true;
+            };
+
+            popoverModal.onclick = (event) => {
+                if (event.target === popoverModal) popoverModal.hidden = true;
+            };
+
+            window.showPopover = function(title, items) {
+                popoverTitle.textContent = title;
+                popoverItems.innerHTML = items.map(item => {
+                    if (title === 'Enlaces') {
+                        return `<div class="popover-item"><a href="${item.url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: none;">${item.nombre}</a></div>`;
+                    }
+                    if (title === 'Habilidades') {
+                        return `<div class="popover-item">${item}</div>`;
+                    }
+                    if (title === 'Estudios') {
+                        return `<div class="popover-item"><strong>${item.degree}</strong><div style="font-size: 13px; color: var(--text-secondary);">${item.institution} • ${item.year}</div></div>`;
+                    }
+                    return `<div class="popover-item">${item}</div>`;
+                }).join('');
+                popoverModal.hidden = false;
+            };
         }
 
         // Cargar proyectos

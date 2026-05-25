@@ -21,7 +21,7 @@
         <a href="inicio.html">🌲 El Bosque</a>
         <a href="publicar.html">🚀 Publicar Idea</a>
         <hr style="border:0; border-top:1px solid rgba(128,128,128,0.2); margin:15px 25px;">
-        <a class="submenu-toggle" onclick="event.preventDefault(); toggleSubmenu()">⚙️ Ajustes ▾</a>
+        <a href="#" class="submenu-toggle">⚙️ Ajustes ▾</a>
         <div id="submenuAjustes" class="submenu"></div>
         <a href="sugerencias.html">💡 Sugerencias</a>
         <a href="#" id="sideLogout" style="color: #ff4757;">🚪 Cerrar Sesión</a>
@@ -90,7 +90,9 @@
         window.toggleTheme = toggleTheme;
         window.toggleEditPanel = () => {
             const editPanel = document.getElementById('editPanel');
-            editPanel.classList.toggle('active');
+            if (!editPanel) return;
+            const active = editPanel.classList.toggle('active');
+            editPanel.hidden = !active;
             renderMenuConfig();
         };
 

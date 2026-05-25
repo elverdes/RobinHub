@@ -4,14 +4,44 @@
     <meta charset="UTF-8">
     <title>Registrarse - RobinHub</title>
     <style>
-        body { font-family: Arial; background: #f5f5f5; margin: 0; }
-        .container { width: 100%; max-width: 450px; margin: 80px auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
-        h2 { color:#1b8246; text-align:center; }
-        input { width:100%; padding:12px; margin-top:10px; margin-bottom:20px; border:1px solid #ccc; border-radius:6px; box-sizing: border-box; }
-        button { width:100%; padding:12px; font-size:1rem; background:#1b8246; color:white; border:none; border-radius:6px; cursor:pointer; }
-        button:hover { background:#146a38; }
-        p { text-align:center; margin-top:20px; }
-        a { color:#1b8246; text-decoration:none; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); margin: 0; padding: 20px; }
+        .container { width: 100%; max-width: 700px; margin: 40px auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        h2 { color:#1b8246; text-align:center; font-size: 28px; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; font-size: 14px; }
+        
+        .section { margin-bottom: 30px; }
+        .section-title { font-size: 16px; font-weight: 700; color: #1b8246; margin-bottom: 15px; border-bottom: 2px solid #e8f5e9; padding-bottom: 8px; }
+        
+        input, textarea, select { width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:8px; box-sizing: border-box; font-family: inherit; font-size: 14px; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #1b8246; box-shadow: 0 0 5px rgba(27,130,70,0.2); }
+        textarea { resize: vertical; min-height: 80px; }
+        
+        .photo-upload { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .photo-preview { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #e8f5e9; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f5f5f5; }
+        .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-input { flex: 1; }
+        
+        .social-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .social-inputs input { margin-bottom: 10px; }
+        
+        .skills-container, .studies-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .skill-tag, .study-item { background: #e8f5e9; color: #1b8246; padding: 8px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+        .skill-tag button, .study-item button { background: none; border: none; color: #1b8246; cursor: pointer; font-weight: bold; }
+        
+        .add-btn { background: #e8f5e9; color: #1b8246; border: 2px solid #1b8246; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .add-btn:hover { background: #1b8246; color: white; }
+        
+        button[type="submit"] { width:100%; padding:14px; font-size:1rem; background:#1b8246; color:white; border:none; border-radius:8px; cursor:pointer; font-weight: bold; margin-top: 20px; }
+        button[type="submit"]:hover { background:#146a38; }
+        
+        p { text-align:center; margin-top:20px; font-size: 14px; }
+        a { color:#1b8246; text-decoration:none; font-weight: 600; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-row input { margin-bottom: 0; }
+        
+        .error { color: #ff4757; font-size: 13px; margin-top: -10px; margin-bottom: 10px; }
+        .success { color: #2ecc71; font-size: 13px; margin-top: -10px; margin-bottom: 10px; }
 
         /* --- ESTILOS PARA MODO OSCURO --- */
 [data-theme="dark"] {
@@ -39,76 +69,358 @@
 </head>
 <body>
     <div class="container">
-        <h2>Crear cuenta</h2>
-        <form onsubmit="handleRegister(event)">
-            <input type="text" id="name" placeholder="Nombre completo" required>
-            <input type="email" id="email" placeholder="Correo electrónico" required>
-            <input type="password" id="password" placeholder="Contraseña" required>
-            <input type="password" id="password2" placeholder="Repetir contraseña" required>
-            <button type="submit">Registrarse</button>
+        <h2>🌲 Crear Cuenta en RobinHub</h2>
+        <div class="subtitle">Completa tu perfil y únete a la comunidad de innovadores</div>
+        
+        <form id="registerForm" onsubmit="handleRegister(event)">
+            
+            <!-- SECCIÓN: DATOS BÁSICOS -->
+            <div class="section">
+                <div class="section-title">📋 Información Personal</div>
+                <div class="form-row">
+                    <input type="text" id="nombre" maxlength="20" placeholder="Nombre completo" required>
+                    <input type="email" id="email" placeholder="Correo electrónico" required>
+                </div>
+                <div class="form-row">
+                    <input type="password" id="password" placeholder="Contraseña" required>
+                    <input type="password" id="password2" placeholder="Repetir contraseña" required>
+                </div>
+            </div>
+            
+            <!-- SECCIÓN: FOTO DE PERFIL -->
+            <div class="section">
+                <div class="section-title">📸 Foto de Perfil</div>
+                <div class="photo-upload">
+                    <div class="photo-preview" id="photoPreview">
+                        <span style="color: #999; font-size: 40px;">📷</span>
+                    </div>
+                    <div class="photo-input">
+                        <input type="file" id="fotoInput" accept="image/*" placeholder="Sube tu foto">
+                        <small style="color: #999; font-size: 12px;">JPG, PNG (máx 5MB)</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SECCIÓN: BIOGRAFÍA Y DESCRIPCIÓN -->
+            <div class="section">
+                <div class="section-title">✍️ Sobre Ti</div>
+                <textarea id="bio" placeholder="Cuéntanos sobre ti, tus intereses y objetivos..." maxlength="500"></textarea>
+                <small style="color: #999; font-size: 12px;" id="bioCount">0/500</small>
+            </div>
+            
+            <!-- SECCIÓN: REDES SOCIALES -->
+            <div class="section">
+                <div class="section-title">🔗 Enlaces a Redes Sociales</div>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="url" id="linkInput" placeholder="Pega el enlace (ej: https://linkedin.com/in/tuusuario)" style="flex: 1; margin-bottom: 0;">
+                    <button type="button" class="add-btn" onclick="addLink()">+ Añadir</button>
+                </div>
+                <div class="links-container" id="linksContainer"></div>
+            </div>
+            
+            <!-- SECCIÓN: HABILIDADES Y COMPETENCIAS -->
+            <div class="section">
+                <div class="section-title">⚡ Habilidades y Competencias</div>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="skillInput" maxlength="20" placeholder="Añade una habilidad (ej: JavaScript, Diseño UX, etc)" style="flex: 1; margin-bottom: 0;">
+                    <button type="button" class="add-btn" onclick="addSkill()">+ Añadir</button>
+                </div>
+                <div class="skills-container" id="skillsContainer"></div>
+            </div>
+            
+            <!-- SECCIÓN: FORMACIÓN ACADÉMICA -->
+            <div class="section">
+                <div class="section-title">🎓 Formación Académica</div>
+                <div style="margin-bottom: 15px;">
+                    <input type="text" id="studyInstitution" placeholder="Institución/Universidad" style="margin-bottom: 10px;">
+                    <input type="text" id="studyDegree" placeholder="Grado/Carrera/Diploma" style="margin-bottom: 10px;">
+                    <input type="number" id="studyYear" placeholder="Año de finalización" min="1990" max="2100" style="margin-bottom: 0;">
+                    <button type="button" class="add-btn" onclick="addStudy()" style="width: 100%; margin-top: 10px;">+ Añadir Estudios</button>
+                </div>
+                <div class="studies-container" id="studiesContainer"></div>
+            </div>
+            
+            <!-- SECCIÓN: CURRÍCULUM -->
+            <div class="section">
+                <div class="section-title">📄 Currículum (PDF)</div>
+                <input type="file" id="cvInput" accept=".pdf" placeholder="Sube tu currículum en PDF">
+                <small style="color: #999; font-size: 12px;">Archivo PDF (máx 10MB) - Opcional</small>
+                <div id="cvFileName" style="color: #2ecc71; font-size: 13px; margin-top: 8px;"></div>
+            </div>
+            
+            <button type="submit">Crear Cuenta</button>
         </form>
-        <script type="module">
-            import { auth, db } from "./firebase.js";
-            import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-            import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-            window.handleRegister = async function(e){
-                e.preventDefault();
-                const nombre = document.getElementById("name").value;
-                const email = document.getElementById("email").value;
-                const password = document.getElementById("password").value;
-                const password2 = document.getElementById("password2").value;
-
-                if(password !== password2){
-                    alert("Las contraseñas no coinciden");
-                    return;
-                }
-
-                try {
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    const user = userCredential.user;
-
-                    // Inicializamos con biografía vacía
-                    await setDoc(doc(db, "users", user.uid), {
-                        nombre,
-                        email,
-                        biografia: "¡Hola! Soy nuevo en RobinHub.",
-                        avatar: "https://ui-avatars.com/api/?name=" + encodeURIComponent(nombre)
-                    });
-
-                    window.location.href = "inicio.html";
-                } catch(error){
-                    alert(error.message);
-                }
-            }
-            // --- LÓGICA DE PERSISTENCIA DE TEMA ---
-function aplicarTemaGuardado() {
-    const tema = localStorage.getItem('robinTema') || 'claro';
-    const body = document.body;
-    
-    if (tema === 'oscuro') {
-        document.documentElement.setAttribute("data-theme", "dark");
-        body.style.backgroundImage = "url('oscuro.png')";
-    } else {
-        document.documentElement.removeAttribute("data-theme");
-        body.style.backgroundImage = "url('claro.png')";
-    }
-}
-
-// Función para cambiar el tema (llámala desde tu botón del menú)
-window.toggleTheme = () => {
-    const esOscuro = document.documentElement.getAttribute("data-theme") === "dark";
-    const nuevoTema = esOscuro ? 'claro' : 'oscuro';
-    
-    localStorage.setItem('robinTema', nuevoTema);
-    aplicarTemaGuardado();
-};
-
-// Ejecutar inmediatamente al cargar la página
-aplicarTemaGuardado();
-
-        </script>
+        
         <p>¿Ya tienes una cuenta? <a href="login.html">Inicia sesión aquí</a></p>
     </div>
+
+    <script type="module">
+        import { auth, db } from "./firebase.js";
+        import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        let fotoBase64 = "";
+        let cvBase64 = "";
+        let skills = [];
+        let studies = [];
+        let links = [];
+
+        // Manejar foto
+        document.getElementById("fotoInput").addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (file.size > 5 * 1024 * 1024) {
+                alert("La foto debe ser menor a 5MB");
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                fotoBase64 = ev.target.result;
+                const preview = document.getElementById("photoPreview");
+                preview.innerHTML = `<img src="${fotoBase64}">`;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Manejar CV
+        document.getElementById("cvInput").addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (file.type !== "application/pdf") {
+                alert("Solo se aceptan archivos PDF");
+                return;
+            }
+            
+            if (file.size > 10 * 1024 * 1024) {
+                alert("El PDF debe ser menor a 10MB");
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                cvBase64 = ev.target.result;
+                document.getElementById("cvFileName").textContent = `✓ ${file.name} cargado`;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Contador de biografía
+        document.getElementById("bio").addEventListener("input", (e) => {
+            document.getElementById("bioCount").textContent = `${e.target.value.length}/500`;
+        });
+
+        // Añadir habilidad
+        window.addSkill = function() {
+            const input = document.getElementById("skillInput");
+            const skill = input.value.trim();
+            if (!skill) return;
+            if (skill.length > 20) {
+                alert("La habilidad no puede tener más de 20 caracteres");
+                return;
+            }
+            
+            skills.push(skill);
+            renderSkills();
+            input.value = "";
+        };
+
+        function renderSkills() {
+            const container = document.getElementById("skillsContainer");
+            container.innerHTML = skills.map((skill, idx) => `
+                <div class="skill-tag">
+                    ${skill}
+                    <button type="button" onclick="removeSkill(${idx})">✕</button>
+                </div>
+            `).join("");
+        }
+
+        window.removeSkill = function(idx) {
+            skills.splice(idx, 1);
+            renderSkills();
+        };
+
+        // Permitir Enter para añadir habilidad
+        document.getElementById("skillInput").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                addSkill();
+            }
+        });
+
+        // Añadir enlace
+        window.addLink = function() {
+            const urlInput = document.getElementById("linkInput");
+            const url = urlInput.value.trim();
+            
+            if (!url) return;
+            
+            // Validar que sea una URL válida
+            try {
+                new URL(url);
+            } catch {
+                alert("Por favor ingresa una URL válida");
+                return;
+            }
+            
+            // Extraer nombre del dominio
+            const urlObj = new URL(url);
+            const hostname = urlObj.hostname.replace("www.", "");
+            let nombre = hostname.charAt(0).toUpperCase() + hostname.slice(1);
+            if (nombre.length > 20) {
+                nombre = nombre.slice(0, 20);
+            }
+            
+            links.push({ url, nombre });
+            renderLinks();
+            urlInput.value = "";
+        };
+
+        function renderLinks() {
+            const container = document.getElementById("linksContainer");
+            container.innerHTML = links.map((link, idx) => `
+                <div class="link-tag" style="background: #e3f2fd; color: #1976d2; padding: 10px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; margin: 4px; cursor: pointer; user-select: none;" onclick="editLinkName(${idx})">
+                    🔗 <span id="linkName${idx}">${link.nombre}</span>
+                    <button type="button" style="background: none; border: none; color: #1976d2; cursor: pointer; font-weight: bold; padding: 0;" onclick="event.stopPropagation(); removeLink(${idx})">✕</button>
+                </div>
+            `).join("");
+        }
+
+        window.removeLink = function(idx) {
+            links.splice(idx, 1);
+            renderLinks();
+        };
+
+        window.editLinkName = function(idx) {
+            const newName = prompt(`Editar nombre del enlace (${links[idx].url}):`, links[idx].nombre);
+            if (newName !== null) {
+                const trimmed = newName.trim();
+                if (!trimmed) return;
+                if (trimmed.length > 20) {
+                    alert("El nombre del enlace no puede tener más de 20 caracteres");
+                    return;
+                }
+                links[idx].nombre = trimmed;
+                renderLinks();
+            }
+        };
+
+        // Permitir Enter para añadir enlace
+        document.getElementById("linkInput").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                addLink();
+            }
+        });
+
+        // Añadir estudio
+        window.addStudy = function() {
+            const institution = document.getElementById("studyInstitution").value.trim();
+            const degree = document.getElementById("studyDegree").value.trim();
+            const year = document.getElementById("studyYear").value;
+            
+            if (!institution || !degree || !year) {
+                alert("Completa todos los campos de formación");
+                return;
+            }
+            
+            studies.push({ institution, degree, year });
+            renderStudies();
+            document.getElementById("studyInstitution").value = "";
+            document.getElementById("studyDegree").value = "";
+            document.getElementById("studyYear").value = "";
+        };
+
+        function renderStudies() {
+            const container = document.getElementById("studiesContainer");
+            container.innerHTML = studies.map((study, idx) => `
+                <div class="study-item">
+                    <div style="flex: 1;">
+                        <strong>${study.degree}</strong> - ${study.institution} (${study.year})
+                    </div>
+                    <button type="button" onclick="removeStudy(${idx})">✕</button>
+                </div>
+            `).join("");
+        }
+
+        window.removeStudy = function(idx) {
+            studies.splice(idx, 1);
+            renderStudies();
+        };
+
+        // Registrar usuario
+        window.handleRegister = async function(e) {
+            e.preventDefault();
+            
+            const nombre = document.getElementById("nombre").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const password2 = document.getElementById("password2").value;
+            
+            if (password !== password2) {
+                alert("Las contraseñas no coinciden");
+                return;
+            }
+            
+            if (password.length < 6) {
+                alert("La contraseña debe tener al menos 6 caracteres");
+                return;
+            }
+            if (nombre.length > 20) {
+                alert("El nombre no puede exceder 20 caracteres");
+                return;
+            }
+            
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Crear documento de usuario con toda la información
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    nombre,
+                    email,
+                    bio: document.getElementById("bio").value || "",
+                    foto: fotoBase64 || "https://ui-avatars.com/api/?name=" + encodeURIComponent(nombre),
+                    
+                    // Enlaces a redes sociales
+                    enlaces: links,
+                    
+                    // Habilidades
+                    habilidades: skills,
+                    
+                    // Formación
+                    estudios: studies,
+                    
+                    // CV
+                    cv: cvBase64 || "",
+                    
+                    // Metadatos
+                    createdAt: new Date(),
+                    actualizadoEn: new Date()
+                });
+
+                alert("¡Cuenta creada exitosamente! Redirigiendo...");
+                window.location.href = "inicio.html";
+            } catch(error) {
+                alert("Error: " + error.message);
+            }
+        };
+        
+        // Tema
+        function aplicarTemaGuardado() {
+            const tema = localStorage.getItem('robinTema') || 'claro';
+            if (tema === 'oscuro') {
+                document.documentElement.setAttribute("data-theme", "dark");
+                document.body.style.backgroundImage = "url('oscuro.png')";
+            } else {
+                document.documentElement.removeAttribute("data-theme");
+                document.body.style.backgroundImage = "url('claro.png')";
+            }
+        }
+        aplicarTemaGuardado();
+    </script>
 </body>
 </html>
