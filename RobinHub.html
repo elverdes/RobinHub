@@ -1,171 +1,91 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>RobinHub - Donde las ideas encuentran capital</title>
-<style>
-body { font-family: Arial; margin: 0; background: #f5f5f5; }
-header { background: #1b8246; padding: 20px; color: white; display: flex; justify-content: space-between; }
-header h1 { margin: 0; }
-header a { color: white; text-decoration: none; font-weight: bold; }
+    <meta charset="UTF-8">
+    <title>RobinHub — donde tus ideas encuentran su oportunidad</title>
+    <link rel="stylesheet" href="./shared/styles.css">
+    <style>
+        /* Hero verde full-width */
+        .hero-giant { width:100%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; min-height:100vh; box-shadow: inset 0 -60px 80px rgba(0,0,0,0.08); }
+        .hero-inner { max-width:1200px; padding:80px 20px; text-align:center }
+        .hero-inner h1 { font-size:4rem; margin:0 0 10px; letter-spacing:-1px }
+        .hero-inner p { font-size:1.4rem; margin:0 0 22px; opacity:0.95 }
+        .hero-actions { display:flex; gap:12px; justify-content:center; margin-top:18px }
+        .btn-cta { background:white; color:var(--primary); padding:12px 18px; border-radius:12px; font-weight:800; border:none; cursor:pointer }
+        .btn-ghost { background:transparent; border:2px solid rgba(255,255,255,0.18); color:white; padding:10px 14px; border-radius:12px }
 
-.hero {
-    text-align: center;
-    padding: 80px 20px;
-    background: #e9f8ef;
-}
-.hero h2 { font-size: 2.5rem; }
-.buttons button {
-    margin: 15px;
-    padding: 15px 30px;
-    border: none;
-    font-size: 1.1rem;
-    cursor: pointer;
-    border-radius: 6px;
-}
-.primary { background: #1b8246; color: white; }
-.secondary { background: white; border: 2px solid #1b8246; color: #1b8246; }
+        /* Section card that overlaps background */
+        .info-section { max-width:1100px; margin:-60px auto 30px; background:var(--bg-card); border-radius:14px; padding:28px; box-shadow:0 18px 40px rgba(0,0,0,0.08) }
+        .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px }
+        .info-grid h3 { margin-top:0; color:var(--primary) }
 
-.footer {
-    margin-top: 40px;
-    padding: 20px;
-    background: #333;
-    color: white;
-    text-align: center;
-}
+        .examples { max-width:1100px; margin:40px auto; padding:0 20px; display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px }
+        .example { background:var(--bg-card); border-radius:12px; overflow:hidden; box-shadow:0 12px 30px rgba(0,0,0,0.06); }
+        .example img{ width:100%; height:160px; object-fit:cover }
+        .example .meta{ padding:12px }
 
-/* --- ESTILOS PARA MODO OSCURO --- */
-[data-theme="dark"] {
-    --bg-card: #1a1a1a;
-    --text-main: #f0f0f0;
-    --light-green: #0d3d21; /* Verde muy oscuro para el fondo del nav-bottom */
-}
+        footer{ text-align:center; color:var(--text-secondary); padding:28px 10px }
 
-/* Aplicación del fondo oscuro al overlay */
-[data-theme="dark"] body::after {
-    background: rgba(0, 0, 0, 0.6) !important;
-}
-
-/* Si tienes tarjetas de sugerencias o publicar, añade esto para que cambien de color */
-[data-theme="dark"] .sugerencia-card, 
-[data-theme="dark"] .publicar-container,
-[data-theme="dark"] .ajustes-card {
-    background: var(--bg-card) !important;
-    color: var(--text-main) !important;
-    border-color: rgba(255,255,255,0.1);
-}
-
-
-</style>
+        @media (max-width:900px){ .info-grid{ grid-template-columns:1fr } .hero-inner h1{ font-size:2.4rem } }
+    </style>
 </head>
 <body>
 
-<header>
-    <h1>RobinHub</h1>
-    <a href="login.html">Iniciar sesión / Registrarse</a>
-</header>
-
-<section class="hero">
-    <h2>Donde las ideas encuentran capital</h2>
-    <p>Publica tu idea, regístrala y conecta con inversionistas.</p>
-    <div class="buttons">
-        <button class="primary">Publicar Idea</button>
-        <button class="secondary">Explorar Ideas</button>
-    </div>
-</section>
-<!-- Sección: Cómo funciona -->
-<section style="padding: 60px 20px; background: white;">
-    <h2 style="text-align:center; font-size: 2rem; color:#1b8246;">¿Cómo funciona RobinHub?</h2>
-    <p style="text-align:center; max-width:700px; margin: 10px auto 40px;">
-        Un ecosistema donde las ideas se transforman en proyectos reales mediante visibilidad, registro y conexión con capital inteligente.
-    </p>
-
-    <div style="
-        display: flex; 
-        gap: 20px; 
-        justify-content: center; 
-        flex-wrap: wrap;
-        max-width: 1000px;
-        margin: 0 auto;">
-        
-        <!-- Bloque 1 -->
-        <div style="background:#e9f8ef; padding:20px; border-radius:10px; width:280px; text-align:center;">
-            <h3>1. Publica tu Idea</h3>
-            <p>Comparte tu propuesta, describe tu visión y deja que la comunidad la descubra.</p>
+    <!-- HERO: fondo verde full-width -->
+    <section class="hero-giant" aria-label="Portada RobinHub">
+        <div class="hero-inner">
+            <h1>RobinHub</h1>
+            <p>dónde tus ideas encuentran su oportunidad</p>
+            <div class="hero-actions">
+                <a class="btn-cta" href="registro.html">Crear cuenta</a>
+                <a class="btn-ghost" href="publicar.html">Publicar idea</a>
+            </div>
         </div>
+    </section>
 
-        <!-- Bloque 2 -->
-        <div style="background:#e9f8ef; padding:20px; border-radius:10px; width:280px; text-align:center;">
-            <h3>2. Regístrala</h3>
-            <p>Protege tu idea dejando prueba de autoría con sello de tiempo seguro.</p>
+    <!-- Info card: se muestra sobre el fondo al hacer scroll -->
+    <section class="info-section" aria-labelledby="info-title">
+        <div id="info-title" style="display:none">Información RobinHub</div>
+        <div class="info-grid">
+            <div>
+                <h3>¿Qué es RobinHub?</h3>
+                <p style="color:var(--text-secondary)">Una comunidad para compartir ideas, encontrar colaboradores y registrar autoría. Fomentamos la colaboración basada en habilidades y la mentoría.</p>
+            </div>
+            <div>
+                <h3>¿Para qué sirve?</h3>
+                <p style="color:var(--text-secondary)">Permite que proyectos encuentren manos y mentes complementarias: diseñadores, desarrolladores, expertos y voluntarios trabajan juntos para llevar ideas a prototipos.</p>
+            </div>
+            <div>
+                <h3>Cómo funciona</h3>
+                <p style="color:var(--text-secondary)">Publica una descripción corta, marca las habilidades necesarias y especifica el tipo de colaboración (mentoría, intercambio de horas, colaboración puntual).</p>
+            </div>
+            <div>
+                <h3>Nuestro propósito</h3>
+                <p style="color:var(--text-secondary)">Facilitar conexiones éticas y sostenibles que permitan desarrollar ideas con impacto social o local, sin necesidad de vender la idea.</p>
+            </div>
         </div>
-
-        <!-- Bloque 3 -->
-        <div style="background:#e9f8ef; padding:20px; border-radius:10px; width:280px; text-align:center;">
-            <h3>3. Conecta con Inversores</h3>
-            <p>Presenta tu proyecto a personas o entidades interesadas en financiar innovación.</p>
+        <div style="text-align:center;margin-top:18px">
+            <a class="btn-cta" href="registro.html">Únete a la comunidad</a>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Sección: Ideas destacadas -->
-<section style="padding: 60px 20px; background: #f0f0f0;">
-    <h2 style="text-align:center; font-size: 2rem; color:#1b8246;">Ideas destacadas</h2>
-    <p style="text-align:center; max-width:700px; margin: 10px auto 40px;">
-        Explora conceptos innovadores que ya están captando el interés de potenciales inversores.
-    </p>
-
-    <div style="
-        display: flex; 
-        gap: 20px; 
-        justify-content: center; 
-        flex-wrap: wrap;
-        max-width: 1100px;
-        margin: 0 auto;">
-        
-        <!-- Idea 1 -->
-        <div style="background:white; padding:20px; border-radius:10px; width:300px; box-shadow:0 0 10px rgba(0,0,0,0.1);">
-            <h3>App de Agricultura Urbana</h3>
-            <p>Un sistema inteligente para gestionar cultivos domésticos con IA.</p>
-            <button style="margin-top:10px; padding:10px 20px; background:#1b8246; color:white; border:none; border-radius:5px; cursor:pointer;">
-                Ver más
-            </button>
+    <!-- Al bajar vuelve a verse el fondo y aparecen ejemplos -->
+    <section style="max-width:1200px;margin:40px auto 20px;padding:0 20px">
+        <h2 style="color:var(--primary);text-align:center;margin-bottom:18px">Ejemplos de publicaciones</h2>
+        <div class="examples">
+            <div class="example"><img src="image_0.jpg" alt="Huertos urbanos"><div class="meta"><strong>Huertos urbanos colaborativos</strong><p style="margin:6px 0 0;color:var(--text-secondary)">Buscamos voluntarios y diseñadores para prototipo local.</p></div></div>
+            <div class="example"><img src="1000082509.png" alt="Trueque"><div class="meta"><strong>Trueque de habilidades</strong><p style="margin:6px 0 0;color:var(--text-secondary)">Intercambio de horas de desarrollo por diseño.</p></div></div>
+            <div class="example"><img src="182_sin_título_20260414205052-removebg-preview.png" alt="Mentoría"><div class="meta"><strong>Mentoría técnica</strong><p style="margin:6px 0 0;color:var(--text-secondary)">Expertos ofrecen soporte no comercial.</p></div></div>
         </div>
+    </section>
 
-        <!-- Idea 2 -->
-        <div style="background:white; padding:20px; border-radius:10px; width:300px; box-shadow:0 0 10px rgba(0,0,0,0.1);">
-            <h3>Economía Circular 3.0</h3>
-            <p>Plataforma que conecta residuos industriales con empresas que los reutilizan.</p>
-            <button style="margin-top:10px; padding:10px 20px; background:#1b8246; color:white; border:none; border-radius:5px; cursor:pointer;">
-                Ver más
-            </button>
-        </div>
+    <footer>
+        © 2026 RobinHub — Conecta, colabora y crea.
+    </footer>
 
-        <!-- Idea 3 -->
-        <div style="background:white; padding:20px; border-radius:10px; width:300px; box-shadow:0 0 10px rgba(0,0,0,0.1);">
-            <h3>IA para Diagnóstico Rápido</h3>
-            <p>Software que analiza síntomas y sugiere posibles diagnósticos preliminares.</p>
-            <button style="margin-top:10px; padding:10px 20px; background:#1b8246; color:white; border:none; border-radius:5px; cursor:pointer;">
-                Ver más
-            </button>
-        </div>
-    </div>
-</section>
-
-<!-- Sección: Llamado a registrarse -->
-<section style="padding: 60px 20px; background:#1b8246; color:white; text-align:center;">
-    <h2 style="font-size:2rem;">Únete a RobinHub</h2>
-    <p style="max-width:700px; margin: 10px auto 30px;">
-        Da visibilidad a tus ideas, consigue apoyo y forma parte de una comunidad que impulsa el futuro.
-    </p>
-    <button style="padding:15px 40px; border:none; border-radius:6px; font-size:1.1rem; background:white; color:#1b8246; cursor:pointer;">
-        Crear cuenta
-    </button>
-</section>
-
-<div class="footer">
-    © 2025 RobinHub - Creado para conectar ideas con oportunidades
-</div>
-
+    <script type="module">
+        import { applySavedTheme } from './shared/common.js';
+        applySavedTheme();
+    </script>
 </body>
 </html>

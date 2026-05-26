@@ -233,6 +233,38 @@
             justify-content: flex-start;
             margin-top: 28px;
         }
+        .btn-edit{
+            background: linear-gradient(180deg,#2ea86a,#1b8246);
+            color: white; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 18px rgba(27,130,70,0.12);
+            transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+        }
+        .btn-edit:hover{ transform: translateY(-2px); box-shadow: 0 14px 30px rgba(27,130,70,0.18); }
+        .btn-edit.saving{ background: linear-gradient(180deg,#ffd54d,#ffb300); color:#2b2b2b; }
+
+        /* Inline edit controls */
+        #inlineControls { background: rgba(27,130,70,0.03); border: 1px solid rgba(27,130,70,0.06); padding: 12px; border-radius: 12px; margin-top: 14px; }
+        #inlineControls input, #inlineControls textarea { background: transparent; border: 1px solid rgba(27,130,70,0.12); }
+        #inlineControls .add-btn { padding: 8px 10px; font-size: 13px; }
+
+        /* Skill badges in edit mode */
+        .skill-badge { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; background: linear-gradient(180deg, rgba(27,130,70,0.08), rgba(27,130,70,0.03)); border:1px solid rgba(27,130,70,0.12); font-weight:600; }
+        .skill-badge button{ background: transparent; border: none; color: rgba(0,0,0,0.5); cursor: pointer; font-weight:700; margin-left:6px; }
+
+        /* Link cards */
+        .link-card { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; background: linear-gradient(180deg, rgba(20,120,60,0.06), rgba(20,120,60,0.02)); border:1px solid rgba(27,130,70,0.08); }
+        .link-card a { font-weight:600; color: var(--primary); }
+        .link-card button{ background: transparent; border: none; color: rgba(0,0,0,0.45); cursor:pointer; font-weight:700; }
+
+        /* Inputs and textareas for inline edit */
+        #inlineName, #inlineBio, #inlineSkillInput, #inlineLinkInput, #inlineStudyInstitution, #inlineStudyDegree, #inlineStudyYear { border: 1px solid rgba(27,130,70,0.12); padding:8px; border-radius:8px; }
+        #inlineName { font-size: 1.6rem; font-weight:700; }
+        textarea#inlineBio { min-height: 80px; }
+
+        /* Small responsive tweak */
+        @media (max-width: 900px) {
+            #inlineControls { padding: 10px; }
+            .profile-hero { grid-template-columns: 120px 1fr; gap:14px; }
+        }
         .profile-actions .btn-folder { min-width: 180px; }
         @media (max-width: 900px) {
             .profile-hero { grid-template-columns: 1fr; text-align: center; }
@@ -502,7 +534,7 @@
     </div>
 
     <div class="profile-actions">
-        <button id="editBtn" class="btn-edit" onclick="location.href='editar-perfil.html'">Editar mi perfil</button>
+        <button id="editBtn" class="btn-edit" onclick="toggleInlineEditMode()">Editar mi perfil</button>
         <button id="btnMyProjects" class="btn-folder primary" style="display:none;">📁 <span class="title">Mis proyectos</span></button>
         <button id="btnChats" class="btn-folder chats" style="display:none;">💬 <span class="title">Chats</span></button>
     </div>
@@ -593,6 +625,7 @@
         const userDoc = await getDoc(doc(db, "users", targetUid));
         if (userDoc.exists()) {
             const d = userDoc.data();
+            window.currentProfile = d;
             document.getElementById("user-name").textContent = d.nombre || "Usuario";
             document.getElementById("user-bio").textContent = d.bio || "Sin descripción";
             if (d.foto) document.getElementById("user-img").src = d.foto;
@@ -878,6 +911,107 @@
         });
         alert('Solicitud rechazada.');
     }
+    
+    // --- MODO EDICIÓN INLINE (sin panel lateral) ---
+    (function(){
+        let inlineEditing = false;
+        let inlineSkills = [];
+        let inlineLinks = [];
+        let inlineStudies = [];
+        let inlinePhoto = null;
+        let inlineCv = null;
+
+        window.toggleInlineEditMode = async function(){
+            const btn = document.getElementById('editBtn');
+            const nameEl = document.getElementById('user-name');
+            const bioEl = document.getElementById('user-bio');
+            const imgEl = document.getElementById('user-img');
+            const linksRow = document.getElementById('linksRow');
+            const skillsList = document.getElementById('skillsList');
+            const studiesList = document.getElementById('studiesList');
+
+            if(!inlineEditing){
+                // activar modo edición
+                inlineEditing = true;
+                btn.textContent = 'Guardar cambios';
+
+                const profile = window.currentProfile || {};
+                inlineSkills = (profile.habilidades || []).slice();
+                inlineLinks = (profile.enlaces || []).slice();
+                inlineStudies = (profile.estudios || []).slice();
+                inlinePhoto = profile.foto || null;
+                inlineCv = profile.cv || null;
+
+                // name -> input
+                const curName = profile.nombre || nameEl.textContent || '';
+                nameEl.innerHTML = `<input id="inlineName" maxlength="20" style="font-size:1.8rem;padding:6px;border-radius:6px;" value="${escapeHtml(curName)}">`;
+                // bio -> textarea (clickable to edit)
+                const curBio = profile.bio || bioEl.textContent || '';
+                bioEl.innerHTML = `<textarea id="inlineBio" style="width:100%;min-height:80px;padding:8px;border-radius:8px;">${escapeHtml(curBio)}</textarea>`;
+
+                // make image clickable to change
+                imgEl.style.cursor = 'pointer';
+                if(!document.getElementById('photoInputInline')){
+                    const inp = document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.id='photoInputInline'; inp.style.display='none'; document.body.appendChild(inp);
+                    inp.addEventListener('change', function(e){ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=ev=>{ inlinePhoto=ev.target.result; imgEl.src=inlinePhoto; }; r.readAsDataURL(f); });
+                }
+                imgEl.addEventListener('click', triggerPhotoInput);
+
+                // cv input
+                if(!document.getElementById('cvInputInline')){
+                    const c = document.createElement('input'); c.type='file'; c.accept='.pdf'; c.id='cvInputInline'; c.style.display='none'; document.body.appendChild(c);
+                    c.addEventListener('change', function(e){ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=ev=>{ inlineCv=ev.target.result; }; r.readAsDataURL(f); });
+                }
+
+                // render skill/link/study edit UI
+                renderInlineSkills();
+                renderInlineLinks();
+                renderInlineStudies();
+
+                // inject small controls area (if not exists)
+                if(!document.getElementById('inlineControls')){
+                    const c = document.createElement('div'); c.id='inlineControls'; c.style.marginTop='12px';
+                    c.innerHTML = `
+                        <div style="display:flex;gap:8px;margin-bottom:8px;"><input id="inlineSkillInput" maxlength="20" placeholder="Añadir habilidad" style="flex:1;padding:8px;border-radius:8px;"> <button class="add-btn" type="button" onclick="(function(){ const v=document.getElementById('inlineSkillInput').value.trim(); if(!v) return; inlineSkills.push(v); document.getElementById('inlineSkillInput').value=''; renderInlineSkills(); })()">+ Añadir</button></div>
+                        <div style="display:flex;gap:8px;margin-bottom:8px;"><input id="inlineLinkInput" placeholder="Añadir URL" style="flex:1;padding:8px;border-radius:8px;"> <button class="add-btn" type="button" onclick="(function(){ const u=document.getElementById('inlineLinkInput').value.trim(); if(!u) return; try{ new URL(u);}catch{alert('URL inválida');return;} const hn=new URL(u).hostname.replace('www.',''); let nombre=hn.charAt(0).toUpperCase()+hn.slice(1); if(nombre.length>20) nombre=nombre.slice(0,20); inlineLinks.push({url:u,nombre:nombre}); document.getElementById('inlineLinkInput').value=''; renderInlineLinks(); })()">+ Enlace</button></div>
+                        <div style="display:flex;gap:8px;margin-bottom:8px;"><input id="inlineStudyInstitution" placeholder="Institución" style="flex:1;padding:8px;border-radius:8px;"><input id="inlineStudyDegree" placeholder="Grado" style="flex:1;padding:8px;border-radius:8px;"><input id="inlineStudyYear" type="number" placeholder="Año" style="width:96px;padding:8px;border-radius:8px;"><button class="add-btn" type="button" onclick="(function(){ const inst=document.getElementById('inlineStudyInstitution').value.trim(); const deg=document.getElementById('inlineStudyDegree').value.trim(); const year=document.getElementById('inlineStudyYear').value; if(!inst||!deg||!year){alert('Completa campos');return;} inlineStudies.push({institution:inst,degree:deg,year:year}); document.getElementById('inlineStudyInstitution').value=''; document.getElementById('inlineStudyDegree').value=''; document.getElementById('inlineStudyYear').value=''; renderInlineStudies(); })()">+ Añadir</button></div>
+                    `;
+                    const parent = document.querySelector('.profile-main'); parent.appendChild(c);
+                }
+
+            } else {
+                // salir y guardar
+                const name = (document.getElementById('inlineName')||{}).value?.trim() || '';
+                const bio = (document.getElementById('inlineBio')||{}).value?.trim() || '';
+                if(!name){ alert('El nombre es requerido'); return; }
+                if(name.length>20){ alert('El nombre no puede exceder 20 caracteres'); return; }
+                try{
+                    const user = auth.currentUser; if(!user){ alert('No autenticado'); return; }
+                    await updateDoc(doc(db,'users',user.uid),{
+                        nombre: name,
+                        bio: bio,
+                        foto: inlinePhoto || window.currentProfile?.foto || ('https://ui-avatars.com/api/?name='+encodeURIComponent(name)),
+                        habilidades: inlineSkills,
+                        enlaces: inlineLinks,
+                        estudios: inlineStudies,
+                        cv: inlineCv || window.currentProfile?.cv || '',
+                        actualizadoEn: new Date()
+                    });
+                    // recargar para reflejar cambios (sencillo y seguro)
+                    window.location.reload();
+                }catch(err){ alert('Error guardando: '+err.message); }
+            }
+        };
+
+        function triggerPhotoInput(){ const inp=document.getElementById('photoInputInline'); if(inp) inp.click(); }
+
+        function renderInlineSkills(){ const el=document.getElementById('skillsList'); if(!el) return; el.innerHTML = inlineSkills.map((s,i)=>`<div class="skill-badge">${escapeHtml(s)} <button type="button" onclick="(function(i){ inlineSkills.splice(i,1); renderInlineSkills(); })(${i})">✕</button></div>`).join(''); }
+        function renderInlineLinks(){ const el=document.getElementById('linksRow'); if(!el) return; el.style.display='flex'; el.innerHTML = inlineLinks.map((l,i)=>{ const display = (l.nombre||new URL(l.url).hostname).length>17 ? (l.nombre||new URL(l.url).hostname).slice(0,17)+'…' : (l.nombre||new URL(l.url).hostname); return `<div class="link-card"> <a href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(l.nombre||l.url)}">${escapeHtml(display)}</a> <button type="button" onclick="(function(i){ inlineLinks.splice(i,1); renderInlineLinks(); })(${i})">✕</button> <button type="button" onclick="(function(i){ const newName=prompt('Editar nombre:', inlineLinks[i].nombre||''); if(newName===null) return; const t=newName.trim(); if(!t) return; if(t.length>20){ alert('Máx 20 caracteres'); return; } inlineLinks[i].nombre=t; renderInlineLinks(); })( ${i} )">✎</button></div>`; }).join(''); }
+        function renderInlineStudies(){ const el=document.getElementById('studiesList'); if(!el) return; el.innerHTML = inlineStudies.map((s,i)=>`<div class="study-card"><strong>${escapeHtml(s.degree)}</strong><p>${escapeHtml(s.institution)}</p><p style="font-size:12px;color:var(--text-secondary);">Finalizado: ${escapeHtml(s.year)}</p><button type="button" onclick="(function(i){ inlineStudies.splice(i,1); renderInlineStudies(); })(${i})">✕</button></div>`).join(''); }
+
+        function escapeHtml(str){ return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    })();
 </script>
 </body>
 </html>
