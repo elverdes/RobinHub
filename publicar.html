@@ -330,14 +330,6 @@
             <button type="button" id="toggleCollisionBtn" title="Activar/Desactivar Colisiones">🚫</button>
             <button type="button" id="toggleEditModeBtn" title="Modo Escritura">✏️</button>
             <button type="button" id="layersBtn" title="Panel de Capas">🗂️</button>
-            <div class="add-menu">
-                <button type="button" id="addBtn" title="Añadir Elemento">➕</button>
-                <div class="menu">
-                    <button type="button" id="addTextBtn">📝 Texto</button>
-                    <button type="button" id="addImageBtn">🖼️ Imagen</button>
-                    <button type="button" id="addButtonBtn">🔘 Botón</button>
-                </div>
-            </div>
         </div>
         <div class="nav-bottom-right">
             <div class="consejo-texto" id="randomTip">Cada gran proyecto comienza con una idea...</div>
@@ -368,7 +360,7 @@
     <div id="layersPanel" class="layers-panel">
         <div class="layers-header">
             <h3>Capas & Editar</h3>
-            <button class="layers-close-btn" id="layersCloseBtn">✕</button>
+            <button type="button" class="layers-close-btn" id="layersCloseBtn">✕</button>
         </div>
         <div class="layers-list" id="layersList"></div>
         <div class="layers-editor" id="layersEditor"></div>
@@ -1151,23 +1143,10 @@
     }
 
     function attachToolbarListeners() {
-        const addBtn = document.getElementById('addBtn');
-        const addTextBtn = document.getElementById('addTextBtn');
-        const addImageBtn = document.getElementById('addImageBtn');
-        const addButtonBtn = document.getElementById('addButtonBtn');
         const toggleGridBtn = document.getElementById('toggleGridBtn');
         const toggleCollisionBtn = document.getElementById('toggleCollisionBtn');
         const toggleEditModeBtn = document.getElementById('toggleEditModeBtn');
 
-        if (addBtn) {
-            addBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                document.querySelector('.add-menu')?.classList.toggle('open');
-            });
-        }
-        if (addTextBtn) addTextBtn.addEventListener('click', (e) => { e.preventDefault(); addElement('text'); });
-        if (addImageBtn) addImageBtn.addEventListener('click', (e) => { e.preventDefault(); addElement('image'); });
-        if (addButtonBtn) addButtonBtn.addEventListener('click', (e) => { e.preventDefault(); addElement('button'); });
         if (toggleGridBtn) toggleGridBtn.addEventListener('click', (e) => {
             e.preventDefault();
             gridEnabled = !gridEnabled;
@@ -1211,29 +1190,34 @@
         }
         previewState.elements.push(newItem);
         buildPreview();
-        document.querySelector('.add-menu').classList.remove('open');
+        document.querySelector('.add-menu')?.classList.remove('open');
     }
 
     // Vista previa imagen
-    document.getElementById("fileInput").onchange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            if (file.size > 1048576) { alert("Imagen demasiado grande"); return; }
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                base64 = event.target.result;
-                const imageItem = previewState.elements.find(el => el.id === 'image');
-                if (imageItem) {
-                    imageItem.content = base64;
-                    updatePreviewContent(imageItem);
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-    };
+    const fileInputEl = document.getElementById("fileInput");
+    if (fileInputEl) {
+        fileInputEl.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 1048576) { alert("Imagen demasiado grande"); return; }
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    base64 = event.target.result;
+                    const imageItem = previewState.elements.find(el => el.id === 'image');
+                    if (imageItem) {
+                        imageItem.content = base64;
+                        updatePreviewContent(imageItem);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
 
     // Publicar
-    document.getElementById("formPublicar").onsubmit = async (e) => {
+    const formPublicarEl = document.getElementById("formPublicar");
+    if (formPublicarEl) {
+        formPublicarEl.onsubmit = async (e) => {
         e.preventDefault();
         if (isSubmitting) return; 
         isSubmitting = true;
@@ -1283,6 +1267,7 @@
             isSubmitting = false; btn.disabled = false;
         }
     };
+}
     
     // --- PANEL DE CAPAS ---
     let selectedLayerId = null;
@@ -1385,7 +1370,7 @@
                         <input type="text" id="bgColorInput" class="editor-input" placeholder="#eff8f0" value="${previewState.editorBgColor}" style="flex: 1;">
                     </div>
                 </div>
-                <button id="addElementLayersBtn" class="add-element-btn-layers">➕ Agregar Elemento</button>
+                <button type="button" id="addElementLayersBtn" class="add-element-btn-layers">➕ Agregar Elemento</button>
             `;
             
             // Re-attach color picker listeners
@@ -1478,7 +1463,7 @@
         // Agregar el botón de agregar elemento al final
         const addBtnSection = document.createElement('div');
         addBtnSection.className = 'editor-section';
-        addBtnSection.innerHTML = '<button id="addElementLayersBtn" class="add-element-btn-layers">➕ Agregar Elemento</button>';
+        addBtnSection.innerHTML = '<button type="button" id="addElementLayersBtn" class="add-element-btn-layers">➕ Agregar Elemento</button>';
         editor.appendChild(addBtnSection);
         
         // Event listeners para actualizar en tiempo real (con 'input' para cambios inmediatos)
