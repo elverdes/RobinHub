@@ -248,6 +248,45 @@
 
         /* Skill badges in edit mode */
         .skill-badge { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; background: linear-gradient(180deg, rgba(27,130,70,0.08), rgba(27,130,70,0.03)); border:1px solid rgba(27,130,70,0.12); font-weight:600; }
+
+        /* MEDIA QUERIES - RESPONSIVE */
+        @media (max-width: 768px) {
+            .logo-arquero { width: 110px; top: -25px; }
+            .nav-top { height: 65px; padding: 0 3%; }
+            .nav-bottom { height: 50px; padding: 0 3% 0 100px; }
+            .brand-text-bottom { font-size: 22px; margin-left: 20px; }
+            .profile-header { margin: 15px 20px 0; padding: 30px 20px; }
+            .profile-hero { grid-template-columns: 120px 1fr; gap: 20px; }
+            .profile-img { width: 120px; height: 120px; }
+            .profile-main h1 { font-size: 2rem; }
+        }
+
+        @media (max-width: 600px) {
+            .logo-arquero { width: 90px; top: -18px; }
+            .nav-top { height: 55px; padding: 0 2%; }
+            .nav-bottom { height: 45px; padding: 0 2% 0 70px; }
+            .brand-text-bottom { font-size: 18px; margin-left: 12px; }
+            .profile-header { margin: 10px 15px 0; padding: 20px 15px; }
+            .profile-hero { grid-template-columns: 100px 1fr; gap: 15px; }
+            .profile-img { width: 100px; height: 100px; }
+            .profile-main h1 { font-size: 1.6rem; }
+            .studies-list { grid-template-columns: 1fr; }
+            .controls-wrapper { margin-left: 0; gap: 8px; }
+        }
+
+        @media (max-width: 480px) {
+            .logo-arquero { width: 70px; top: -14px; }
+            .nav-top { height: 50px; padding: 0 2%; }
+            .nav-bottom { height: 40px; padding: 0 2% 0 60px; }
+            .brand-text-bottom { font-size: 16px; }
+            .profile-header { margin: 8px 10px 0; padding: 15px 12px; }
+            .profile-hero { grid-template-columns: 80px 1fr; gap: 12px; }
+            .profile-img { width: 80px; height: 80px; }
+            .profile-main h1 { font-size: 1.3rem; }
+            .profile-main p { font-size: 14px; }
+            .btn-edit { padding: 8px 12px; font-size: 13px; }
+        }
+
         .skill-badge button{ background: transparent; border: none; color: rgba(0,0,0,0.5); cursor: pointer; font-weight:700; margin-left:6px; }
 
         /* Link cards */

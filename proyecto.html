@@ -176,6 +176,37 @@
             gap: 12px;
             margin-top: 18px;
         }
+
+        /* MEDIA QUERIES - RESPONSIVE */
+        @media (max-width: 768px) {
+            .logo-arquero { width: 110px; top: -25px; }
+            .nav-top { height: 65px; padding: 0 3%; }
+            .nav-bottom { height: 50px; padding: 0 3% 0 100px; }
+            .brand-text-bottom { font-size: 22px; margin-left: 20px; }
+            .project-container { max-width: 100%; margin: 30px 20px; }
+        }
+
+        @media (max-width: 600px) {
+            .logo-arquero { width: 90px; top: -18px; }
+            .nav-top { height: 55px; padding: 0 2%; }
+            .nav-bottom { height: 45px; padding: 0 2% 0 70px; }
+            .brand-text-bottom { font-size: 18px; margin-left: 12px; }
+            .project-container { margin: 20px 15px; }
+            .project-content { padding: 25px; }
+            .project-content h1 { font-size: 24px; }
+            .author-box { flex-direction: column; text-align: center; }
+        }
+
+        @media (max-width: 480px) {
+            .logo-arquero { width: 70px; top: -14px; }
+            .nav-top { height: 50px; padding: 0 2%; }
+            .nav-bottom { height: 40px; padding: 0 2% 0 60px; }
+            .brand-text-bottom { font-size: 16px; }
+            .project-hero { height: 300px; }
+            .project-container { margin: 15px 10px; }
+            .project-content { padding: 15px; }
+            .project-content h1 { font-size: 18px; }
+        }
 [data-theme="dark"] {
     --bg-card: #1a1a1a;
     --text-main: #f0f0f0;

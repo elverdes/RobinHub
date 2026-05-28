@@ -134,10 +134,11 @@
         /* --- PANEL DE CAPAS --- */
         .layers-panel-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; }
         .layers-panel-overlay.open { display: block; }
-        .layers-panel { position: fixed; right: 0; top: 0; width: 350px; height: 100%; background: rgba(255, 255, 255, 0.78); backdrop-filter: blur(12px); box-shadow: -8px 0 30px rgba(0,0,0,0.2); z-index: 3001; display: flex; flex-direction: column; padding-top: 80px; overflow: hidden; }
-        .layers-header { padding: 12px; border-bottom: 1px solid rgba(27,130,70,0.15); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .layers-panel { position: fixed; right: -350px; top: 0; width: 350px; height: 100%; background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(12px); box-shadow: -8px 0 30px rgba(0,0,0,0.2); z-index: 3001; display: flex; flex-direction: column; overflow: hidden; transition: right 0.3s ease; }
+        [data-theme="dark"] .layers-panel { background: rgba(20, 20, 20, 0.65); }
+        .layers-header { padding: 12px; border-bottom: 1px solid rgba(27,130,70,0.15); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; position: sticky; top: 0; background: inherit; z-index: 10; }
         .layers-header h3 { margin: 0; color: var(--text-main); font-size: 16px; }
-        .layers-close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); }
+        .layers-close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
         .layers-list { flex: 1 1 auto; overflow-y: auto; padding: 6px; min-height: 0; }
         .layer-item { padding: 8px; margin: 2px 0; border-radius: 6px; background: rgba(27,130,70,0.1); border-left: 3px solid var(--primary); cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
         .layer-item:hover { background: rgba(27,130,70,0.2); }
@@ -146,17 +147,21 @@
         .layer-item-actions { display: flex; gap: 3px; }
         .layer-item-actions button { width: 20px; height: 20px; border: none; border-radius: 3px; background: rgba(27,130,70,0.2); cursor: pointer; font-size: 11px; transition: 0.2s; padding: 0; }
         .layer-item-actions button:hover { background: rgba(27,130,70,0.4); }
-        .layers-editor { padding: 10px; border-top: 1px solid rgba(27,130,70,0.15); flex: 0 0 42%; overflow-y: auto; }
+        .layers-editor { padding: 10px; border-top: 1px solid rgba(27,130,70,0.15); flex: 0 0 50%; overflow-y: auto; background: rgba(27,130,70,0.03); }
+        [data-theme="dark"] .layers-editor { background: rgba(27,130,70,0.08); }
         .editor-input { width: 100%; margin: 4px 0; padding: 6px; border: 1px solid rgba(27,130,70,0.2); border-radius: 4px; font-size: 12px; color: var(--text-main); background: rgba(255,255,255,0.9); box-sizing: border-box; }
+        [data-theme="dark"] .editor-input { background: rgba(30,30,30,0.9); border-color: rgba(27,130,70,0.3); color: var(--text-main); }
         .editor-label { font-size: 11px; font-weight: 600; color: var(--primary); text-transform: uppercase; margin-top: 6px; margin-bottom: 2px; }
         .editor-section { margin-bottom: 8px; }
-        .color-picker { width: 32px; height: 32px; border: 1px solid rgba(27,130,70,0.2); border-radius: 4px; cursor: pointer; }
+        .color-picker { width: 40px; height: 40px; border: 1px solid rgba(27,130,70,0.2); border-radius: 6px; cursor: pointer; }
+        .add-element-btn-layers { width: 100%; padding: 10px; margin-top: 8px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .add-element-btn-layers:hover { opacity: 0.9; }
         .z-index-control { display: flex; gap: 4px; align-items: center; }
         .z-index-control button { width: 24px; height: 24px; border: none; border-radius: 3px; background: rgba(27,130,70,0.2); cursor: pointer; font-size: 12px; padding: 0; }
         .z-index-control button:hover { background: rgba(27,130,70,0.4); }
         .z-index-control span { color: var(--text-main); font-size: 11px; }
         @media (max-width: 768px) {
-            .layers-panel { width: 100%; }
+            .layers-panel { width: 100%; right: -100%; }
         }
 
         /* --- LOGO SAGRADO --- */
@@ -230,6 +235,45 @@
             gap: 12px;
             margin-top: 18px;
         }
+
+        /* MEDIA QUERIES - RESPONSIVE */
+        @media (max-width: 768px) {
+            .logo-arquero { width: 110px; top: -25px; }
+            .nav-top { height: 65px; padding: 0 3%; flex-wrap: wrap; }
+            .nav-bottom { height: 50px; padding: 0 3% 0 100px; }
+            .brand-text-bottom { font-size: 22px; margin-left: 20px; }
+            .top-page-title { font-size: 22px; }
+            .preview-shell { height: calc(100vh - 115px); }
+            .layers-panel { width: 280px; }
+        }
+
+        @media (max-width: 600px) {
+            .logo-arquero { width: 90px; top: -18px; }
+            .nav-top { height: 55px; padding: 0 2%; }
+            .nav-bottom { height: 45px; padding: 0 2% 0 70px; }
+            .brand-text-bottom { font-size: 18px; margin-left: 12px; }
+            .top-page-title { font-size: 18px; display: none; }
+            .back-link { font-size: 12px; }
+            .preview-shell { height: calc(100vh - 100px); padding: 8px 5px 0; gap: 8px; }
+            .layers-panel { width: 100%; right: -100%; }
+            .layers-panel-overlay.open .layers-panel { right: 0; }
+            .editor-toolbar { gap: 4px; }
+            .editor-toolbar button { width: 36px; height: 36px; font-size: 16px; }
+        }
+
+        @media (max-width: 480px) {
+            .logo-arquero { width: 70px; top: -14px; }
+            .nav-top { height: 50px; padding: 0 2%; }
+            .nav-bottom { height: 40px; padding: 0 2% 0 60px; }
+            .brand-text-bottom { font-size: 16px; }
+            .top-page-title { display: none; }
+            .back-link { font-size: 11px; }
+            .preview-shell { height: calc(100vh - 90px); flex-direction: column; }
+            .editor-toolbar { gap: 3px; }
+            .editor-toolbar button { width: 32px; height: 32px; font-size: 14px; }
+            .top-action-form button { min-width: 150px; padding: 10px 14px; font-size: 14px; }
+        }
+
 [data-theme="dark"] {
     --bg-card: #1a1a1a;
     --text-main: #f0f0f0;
@@ -282,16 +326,16 @@
             <span class="brand-text-bottom">obinHub</span>
         </div>
         <div class="editor-toolbar">
-            <button id="toggleGridBtn" title="Activar/Desactivar Cuadrícula">📐</button>
-            <button id="toggleCollisionBtn" title="Activar/Desactivar Colisiones">🚫</button>
-            <button id="toggleEditModeBtn" title="Modo Escritura">✏️</button>
-            <button id="layersBtn" title="Panel de Capas">🗂️</button>
+            <button type="button" id="toggleGridBtn" title="Activar/Desactivar Cuadrícula">📐</button>
+            <button type="button" id="toggleCollisionBtn" title="Activar/Desactivar Colisiones">🚫</button>
+            <button type="button" id="toggleEditModeBtn" title="Modo Escritura">✏️</button>
+            <button type="button" id="layersBtn" title="Panel de Capas">🗂️</button>
             <div class="add-menu">
-                <button id="addBtn" title="Añadir Elemento">➕</button>
+                <button type="button" id="addBtn" title="Añadir Elemento">➕</button>
                 <div class="menu">
-                    <button id="addTextBtn">📝 Texto</button>
-                    <button id="addImageBtn">🖼️ Imagen</button>
-                    <button id="addButtonBtn">🔘 Botón</button>
+                    <button type="button" id="addTextBtn">📝 Texto</button>
+                    <button type="button" id="addImageBtn">🖼️ Imagen</button>
+                    <button type="button" id="addButtonBtn">🔘 Botón</button>
                 </div>
             </div>
         </div>
@@ -327,9 +371,7 @@
             <button class="layers-close-btn" id="layersCloseBtn">✕</button>
         </div>
         <div class="layers-list" id="layersList"></div>
-        <div class="layers-editor" id="layersEditor">
-            <p style="text-align: center; color: var(--text-secondary); font-size: 13px;">Selecciona un elemento para editar</p>
-        </div>
+        <div class="layers-editor" id="layersEditor"></div>
     </div>
 <script type="module">
     import { db, auth } from "./firebase.js";
@@ -407,6 +449,7 @@
     const popularTags = [];
 
     const previewState = {
+        editorBgColor: '#eff8f0',
         elements: [
             { id: 'image', type: 'image', top: 30, left: 30, width: 470, height: 300, content: '', bgColor: '#ffffff', textColor: '#1f4021' },
             { id: 'title', type: 'text', top: 30, left: 520, width: 420, height: 110, content: '', textClass: 'title', bgColor: '#ffffff', textColor: '#1f4021' },
@@ -1107,33 +1150,54 @@
         }
     }
 
-    buildPreview();
-    loadPopularTags();
+    function attachToolbarListeners() {
+        const addBtn = document.getElementById('addBtn');
+        const addTextBtn = document.getElementById('addTextBtn');
+        const addImageBtn = document.getElementById('addImageBtn');
+        const addButtonBtn = document.getElementById('addButtonBtn');
+        const toggleGridBtn = document.getElementById('toggleGridBtn');
+        const toggleCollisionBtn = document.getElementById('toggleCollisionBtn');
+        const toggleEditModeBtn = document.getElementById('toggleEditModeBtn');
 
-    document.getElementById('addBtn').addEventListener('click', () => {
-        document.querySelector('.add-menu').classList.toggle('open');
-    });
-
-    document.getElementById('addTextBtn').addEventListener('click', () => addElement('text'));
-    document.getElementById('addImageBtn').addEventListener('click', () => addElement('image'));
-    document.getElementById('addButtonBtn').addEventListener('click', () => addElement('button'));
-    document.getElementById('toggleGridBtn').addEventListener('click', () => {
-        gridEnabled = !gridEnabled;
-        document.getElementById('toggleGridBtn').style.opacity = gridEnabled ? 1 : 0.5;
-        document.getElementById('previewEditor').classList.toggle('grid-enabled', gridEnabled);
-    });
-    document.getElementById('toggleCollisionBtn').addEventListener('click', () => {
-        collisionEnabled = !collisionEnabled;
-        document.getElementById('toggleCollisionBtn').style.opacity = collisionEnabled ? 1 : 0.5;
-        document.querySelectorAll('.preview-element').forEach(el => {
-            el.classList.toggle('collision-enabled', collisionEnabled);
+        if (addBtn) {
+            addBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelector('.add-menu')?.classList.toggle('open');
+            });
+        }
+        if (addTextBtn) addTextBtn.addEventListener('click', (e) => { e.preventDefault(); addElement('text'); });
+        if (addImageBtn) addImageBtn.addEventListener('click', (e) => { e.preventDefault(); addElement('image'); });
+        if (addButtonBtn) addButtonBtn.addEventListener('click', (e) => { e.preventDefault(); addElement('button'); });
+        if (toggleGridBtn) toggleGridBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            gridEnabled = !gridEnabled;
+            toggleGridBtn.style.opacity = gridEnabled ? 1 : 0.5;
+            document.getElementById('previewEditor')?.classList.toggle('grid-enabled', gridEnabled);
         });
-    });
-    document.getElementById('toggleEditModeBtn').addEventListener('click', () => {
-        editMode = !editMode;
-        document.getElementById('toggleEditModeBtn').style.opacity = editMode ? 1 : 0.5;
-        updateCursor();
-    });
+        if (toggleCollisionBtn) toggleCollisionBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            collisionEnabled = !collisionEnabled;
+            toggleCollisionBtn.style.opacity = collisionEnabled ? 1 : 0.5;
+            document.querySelectorAll('.preview-element').forEach(el => {
+                el.classList.toggle('collision-enabled', collisionEnabled);
+            });
+        });
+        if (toggleEditModeBtn) toggleEditModeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            editMode = !editMode;
+            toggleEditModeBtn.style.opacity = editMode ? 1 : 0.5;
+            updateCursor();
+        });
+    }
+
+    function initializePublicarPage() {
+        buildPreview();
+        buildLayersEditor();
+        loadPopularTags();
+        attachToolbarListeners();
+    }
+
+    document.addEventListener('DOMContentLoaded', initializePublicarPage);
 
     function addElement(type) {
         const id = type + Date.now();
@@ -1312,7 +1376,41 @@
     function buildLayersEditor() {
         const editor = document.getElementById('layersEditor');
         if (!selectedLayerId) {
-            editor.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 12px;">Selecciona un elemento para editar</p>';
+            editor.innerHTML = `
+                <p style="text-align: center; color: var(--text-secondary); font-size: 12px; margin-bottom: 16px;">Selecciona un elemento para editar</p>
+                <div class="editor-section">
+                    <label class="editor-label">Color de fondo</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="color" id="bgColorPicker" class="color-picker" value="${previewState.editorBgColor}">
+                        <input type="text" id="bgColorInput" class="editor-input" placeholder="#eff8f0" value="${previewState.editorBgColor}" style="flex: 1;">
+                    </div>
+                </div>
+                <button id="addElementLayersBtn" class="add-element-btn-layers">➕ Agregar Elemento</button>
+            `;
+            
+            // Re-attach color picker listeners
+            const bgColorPicker = document.getElementById('bgColorPicker');
+            const bgColorInput = document.getElementById('bgColorInput');
+            
+            if (bgColorPicker) {
+                bgColorPicker.addEventListener('input', (e) => {
+                    const color = e.target.value;
+                    previewState.editorBgColor = color;
+                    bgColorInput.value = color;
+                    previewEditor.style.backgroundColor = color;
+                });
+            }
+            
+            if (bgColorInput) {
+                bgColorInput.addEventListener('input', (e) => {
+                    const color = e.target.value;
+                    if (/^#[0-9A-F]{6}$/i.test(color)) {
+                        previewState.editorBgColor = color;
+                        bgColorPicker.value = color;
+                        previewEditor.style.backgroundColor = color;
+                    }
+                });
+            }
             return;
         }
         
@@ -1377,6 +1475,12 @@
         
         editor.innerHTML = html;
         
+        // Agregar el botón de agregar elemento al final
+        const addBtnSection = document.createElement('div');
+        addBtnSection.className = 'editor-section';
+        addBtnSection.innerHTML = '<button id="addElementLayersBtn" class="add-element-btn-layers">➕ Agregar Elemento</button>';
+        editor.appendChild(addBtnSection);
+        
         // Event listeners para actualizar en tiempo real (con 'input' para cambios inmediatos)
         const updateItem = () => {
             if (document.getElementById('editorContent')) item.content = document.getElementById('editorContent').value;
@@ -1415,6 +1519,27 @@
     layersOverlay.addEventListener('click', () => {
         layersOverlay.classList.remove('open');
         layersPanel.style.right = '-350px';
+    });
+
+    // Listener para el botón de agregar elemento dentro del panel
+    document.addEventListener('click', (e) => {
+        if (e.target.id === 'addElementLayersBtn') {
+            e.stopPropagation();
+            const menu = document.createElement('div');
+            menu.style.cssText = 'position: absolute; bottom: 100%; right: 10px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 3010; min-width: 120px; overflow: hidden;';
+            menu.innerHTML = `
+                <button style="width: 100%; text-align: left; padding: 10px 12px; background: none; border: none; cursor: pointer; font-size: 14px; color: #333;">📝 Texto</button>
+                <button style="width: 100%; text-align: left; padding: 10px 12px; background: none; border: none; cursor: pointer; font-size: 14px; color: #333;">🖼️ Imagen</button>
+                <button style="width: 100%; text-align: left; padding: 10px 12px; background: none; border: none; cursor: pointer; font-size: 14px; color: #333;">🔘 Botón</button>
+            `;
+            const buttons = menu.querySelectorAll('button');
+            buttons[0].onclick = () => { addElement('text'); menu.remove(); };
+            buttons[1].onclick = () => { addElement('image'); menu.remove(); };
+            buttons[2].onclick = () => { addElement('button'); menu.remove(); };
+            
+            document.body.appendChild(menu);
+            setTimeout(() => menu.remove(), 3000);
+        }
     });
 </script>
 </body>

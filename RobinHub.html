@@ -7,7 +7,7 @@
     <style>
         /* Hero verde full-width */
         .hero-giant { width:100%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; min-height:100vh; box-shadow: inset 0 -60px 80px rgba(0,0,0,0.08); }
-        .hero-inner { max-width:1200px; padding:80px 20px; text-align:center }
+        .hero-inner { max-width:1200px; padding:60px 20px 140px; text-align:center }
         .hero-inner h1 { font-size:4rem; margin:0 0 10px; letter-spacing:-1px }
         .hero-inner p { font-size:1.4rem; margin:0 0 22px; opacity:0.95 }
         .hero-actions { display:flex; gap:12px; justify-content:center; margin-top:18px }
@@ -15,7 +15,7 @@
         .btn-ghost { background:transparent; border:2px solid rgba(255,255,255,0.18); color:white; padding:10px 14px; border-radius:12px }
 
         /* Section card that overlaps background */
-        .info-section { max-width:1100px; margin:-60px auto 30px; background:var(--bg-card); border-radius:14px; padding:28px; box-shadow:0 18px 40px rgba(0,0,0,0.08) }
+        .info-section { max-width:1100px; margin:-140px auto 30px; background:var(--bg-card); border-radius:14px; padding:28px; box-shadow:0 18px 40px rgba(0,0,0,0.08); position:relative; z-index:10 }
         .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px }
         .info-grid h3 { margin-top:0; color:var(--primary) }
 
@@ -37,8 +37,8 @@
             <h1>RobinHub</h1>
             <p>dónde tus ideas encuentran su oportunidad</p>
             <div class="hero-actions">
-                <a class="btn-cta" href="registro.html">Crear cuenta</a>
-                <a class="btn-ghost" href="publicar.html">Publicar idea</a>
+                <a class="btn-cta" href="login.html">Iniciar sesión</a>
+                <a class="btn-ghost" href="inicio.html">Explorar ideas</a>
             </div>
         </div>
     </section>
@@ -49,19 +49,19 @@
         <div class="info-grid">
             <div>
                 <h3>¿Qué es RobinHub?</h3>
-                <p style="color:var(--text-secondary)">Una comunidad para compartir ideas, encontrar colaboradores y registrar autoría. Fomentamos la colaboración basada en habilidades y la mentoría.</p>
+                <p style="color:var(--text-secondary)">Una plataforma abierta donde publicadores de ideas conectan con profesionales, mentores y voluntarios que tienen las capacidades para desarrollarlas. No es un registro de autoría, sino un espacio colaborativo donde las ideas encuentran los brazos y mentes que las necesitan.</p>
             </div>
             <div>
                 <h3>¿Para qué sirve?</h3>
-                <p style="color:var(--text-secondary)">Permite que proyectos encuentren manos y mentes complementarias: diseñadores, desarrolladores, expertos y voluntarios trabajan juntos para llevar ideas a prototipos.</p>
+                <p style="color:var(--text-secondary)">Resolver el problema clásico: tener una buena idea pero no el equipo para ejecutarla. En RobinHub, una persona con una visión publica qué necesita y otros con habilidades complementarias se suman. Todo basado en mentoría, trueque de horas o colaboración puntual — sin dinero de por medio.</p>
             </div>
             <div>
                 <h3>Cómo funciona</h3>
-                <p style="color:var(--text-secondary)">Publica una descripción corta, marca las habilidades necesarias y especifica el tipo de colaboración (mentoría, intercambio de horas, colaboración puntual).</p>
+                <p style="color:var(--text-secondary)">1) Publica tu idea con una descripción clara. 2) Indica qué perfiles necesitas (diseñador, desarrollador, mentor, etc.) y el tipo de compromiso (mentoría puntual, intercambio de horas, colaboración voluntaria). 3) Espera a que interesados se pongan en contacto contigo. 4) Colaboran y crean juntos.</p>
             </div>
             <div>
                 <h3>Nuestro propósito</h3>
-                <p style="color:var(--text-secondary)">Facilitar conexiones éticas y sostenibles que permitan desarrollar ideas con impacto social o local, sin necesidad de vender la idea.</p>
+                <p style="color:var(--text-secondary)">Democratizar el acceso al talento. Creemos que muchas buenas ideas mueren porque sus creadores no encuentran a las personas indicadas. RobinHub es ese puente: conecta visiones con habilidades, fomentando que cualquier idea con potencial pueda convertirse en realidad.</p>
             </div>
         </div>
         <div style="text-align:center;margin-top:18px">
@@ -73,9 +73,9 @@
     <section style="max-width:1200px;margin:40px auto 20px;padding:0 20px">
         <h2 style="color:var(--primary);text-align:center;margin-bottom:18px">Ejemplos de publicaciones</h2>
         <div class="examples">
-            <div class="example"><img src="image_0.jpg" alt="Huertos urbanos"><div class="meta"><strong>Huertos urbanos colaborativos</strong><p style="margin:6px 0 0;color:var(--text-secondary)">Buscamos voluntarios y diseñadores para prototipo local.</p></div></div>
-            <div class="example"><img src="1000082509.png" alt="Trueque"><div class="meta"><strong>Trueque de habilidades</strong><p style="margin:6px 0 0;color:var(--text-secondary)">Intercambio de horas de desarrollo por diseño.</p></div></div>
-            <div class="example"><img src="182_sin_título_20260414205052-removebg-preview.png" alt="Mentoría"><div class="meta"><strong>Mentoría técnica</strong><p style="margin:6px 0 0;color:var(--text-secondary)">Expertos ofrecen soporte no comercial.</p></div></div>
+            <div class="example" style="background:linear-gradient(180deg,#f0fff4,#ffffff); display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:200px"><div class="meta" style="text-align:center"><strong style="color:var(--primary)">🌱 App de riego automático</strong><p style="margin:6px 0 0;color:var(--text-secondary)">Necesito un desarrollador backend. Ofrezco mentoría en diseño agrícola.</p></div></div>
+            <div class="example" style="background:linear-gradient(180deg,#fff5e6,#ffffff); display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:200px"><div class="meta" style="text-align:center"><strong style="color:var(--primary)">🎨 Rediseño de identidad local</strong><p style="margin:6px 0 0;color:var(--text-secondary)">Buscamos desarrollador. Cambio por 40 horas de diseño gráfico.</p></div></div>
+            <div class="example" style="background:linear-gradient(180deg,#f5f3ff,#ffffff); display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:200px"><div class="meta" style="text-align:center"><strong style="color:var(--primary)">📱 Plataforma comunitaria</strong><p style="margin:6px 0 0;color:var(--text-secondary)">Mentor buscado para guiar startup social. Visión clara, equipo joven.</p></div></div>
         </div>
     </section>
 
