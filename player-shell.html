@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RobinHub - Shell Continua</title>
+    <style>
+        :root {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4fdf8;
+            color: #1b8246;
+        }
+        body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+        header { background: #1b8246; color: white; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        header .label { font-size: 16px; font-weight: 700; }
+        header .controls { display: flex; align-items: center; gap: 10px; }
+        button { border: none; border-radius: 999px; padding: 10px 14px; font-size: 14px; cursor: pointer; background: white; color: #1b8246; box-shadow: 0 3px 12px rgba(0,0,0,0.12); }
+        button:hover { background: #f1f7f3; }
+        .status { font-size: 14px; opacity: 0.9; }
+        .shell-body { flex: 1; display: grid; grid-template-columns: 1fr; }
+        iframe { width: 100%; height: 100%; border: none; min-height: 0; }
+        .note { font-size: 13px; opacity: 0.85; }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <div class="label">RobinHub Shell</div>
+            <div class="note">Navega dentro de este shell para mantener la música continua.</div>
+        </div>
+        <div class="controls">
+            <button id="playPauseBtn" type="button">▶️ Reproducir</button>
+            <button id="exitShellBtn" type="button">🔙 Página normal</button>
+            <div class="status" id="trackLabel">Chopin - Nocturne Op. 9 No. 2</div>
+        </div>
+    </header>
+
+    <div class="shell-body">
+        <iframe id="appFrame" src="inicio.html" title="RobinHub contenido"></iframe>
+    </div>
+
+    <audio id="persistentAudio" preload="auto" style="display:none"></audio>
+
+    <script>
+        const playlist = [
+            { title: 'Chopin - Nocturne Op. 9 No. 2', src: './Classicals.de - Chopin - Nocturne Op. 9, No. 2 in E-flat major.mp3' }
+        ];
+        const storageKey = 'robinShellMusicState';
+        const audio = document.getElementById('persistentAudio');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const trackLabel = document.getElementById('trackLabel');
+        const appFrame = document.getElementById('appFrame');
+
+        let state = { index: 0, time: 0, playing: false };
+
+        function getInitialPath() {
+            const params = new URLSearchParams(window.location.search);
+            const path = params.get('path');
+            if (path) {
+                return path;
+            }
+            return 'inicio.html';
+        }
+
+        function loadState() {
+            const raw = localStorage.getItem(storageKey);
+            if (!raw) return;
+            try {
+                const parsed = JSON.parse(raw);
+                if (typeof parsed.index === 'number') state.index = Math.min(parsed.index, playlist.length - 1);
+                if (typeof parsed.time === 'number') state.time = parsed.time;
+                if (typeof parsed.playing === 'boolean') state.playing = parsed.playing;
+            } catch {
+                // ignore
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(storageKey, JSON.stringify(state));
+        }
+
+        function updateUI() {
+            const track = playlist[state.index] || playlist[0];
+            trackLabel.textContent = track.title;
+            playPauseBtn.textContent = audio.paused ? '▶️ Reproducir' : '⏸️ Pausar';
+        }
+
+        function setTrack(index, resetTime = true) {
+            state.index = Math.max(0, Math.min(index, playlist.length - 1));
+            if (resetTime) state.time = 0;
+            audio.src = playlist[state.index].src;
+            audio.load();
+            if (!resetTime && state.time > 0) {
+                audio.currentTime = Math.min(state.time, audio.duration || state.time);
+            }
+            saveState();
+            updateUI();
+        }
+
+        function playPause() {
+            if (audio.paused) {
+                audio.play().catch(() => {
+                    // autoplay blocked until user interaction
+                });
+            } else {
+                audio.pause();
+            }
+        }
+
+        audio.addEventListener('play', () => {
+            state.playing = true;
+            saveState();
+            updateUI();
+        });
+
+        audio.addEventListener('pause', () => {
+            state.playing = false;
+            saveState();
+            updateUI();
+        });
+
+        audio.addEventListener('timeupdate', () => {
+            state.time = audio.currentTime;
+            saveState();
+        });
+
+        playPauseBtn.addEventListener('click', () => {
+            playPause();
+        });
+
+        function getFrameDocument() {
+            try {
+                return appFrame.contentDocument || appFrame.contentWindow.document;
+            } catch {
+                return null;
+            }
+        }
+
+        function updateShellTitle() {
+            const doc = getFrameDocument();
+            if (!doc) return;
+            const title = doc.title || 'RobinHub';
+            document.title = `Shell — ${title}`;
+        }
+
+        function getFrameLocation() {
+            try {
+                const href = appFrame.contentWindow.location.href;
+                const url = new URL(href);
+                return url.pathname.replace(/^\//, '') + url.search + url.hash;
+            } catch {
+                return null;
+            }
+        }
+
+        function interceptLinks() {
+            const doc = getFrameDocument();
+            if (!doc || doc.body.dataset.linkInterceptorAttached) return;
+            doc.body.dataset.linkInterceptorAttached = 'true';
+
+            doc.addEventListener('click', event => {
+                const anchor = event.target.closest('a[href]');
+                if (!anchor) return;
+                const href = anchor.getAttribute('href');
+                if (!href || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+                if (anchor.target && anchor.target !== '_self') return;
+
+                const base = new URL(appFrame.contentWindow.location.href);
+                const next = new URL(href, base);
+                if (next.origin !== window.location.origin) return;
+                if (!next.pathname.endsWith('.html')) return;
+
+                event.preventDefault();
+                const nextPath = next.pathname.replace(/^\//, '') + next.search + next.hash;
+                appFrame.src = nextPath;
+                history.pushState({ path: nextPath }, '', '?path=' + encodeURIComponent(nextPath));
+            });
+        }
+
+        appFrame.addEventListener('load', () => {
+            interceptLinks();
+            updateShellTitle();
+        });
+
+        window.addEventListener('popstate', event => {
+            const path = event.state?.path || getInitialPath();
+            if (appFrame.src.endsWith(path)) return;
+            appFrame.src = path;
+        });
+
+        const exitShellBtn = document.getElementById('exitShellBtn');
+        exitShellBtn.addEventListener('click', () => {
+            const path = getFrameLocation() || getInitialPath();
+            window.location.href = path;
+        });
+
+        loadState();
+        const initialPath = getInitialPath();
+        appFrame.src = initialPath;
+        history.replaceState({ path: initialPath }, '', '?path=' + encodeURIComponent(initialPath));
+        setTrack(state.index, false);
+        if (state.playing) {
+            audio.play().catch(() => {});
+        }
+        updateUI();
+    </script>
+</body>
+</html>
