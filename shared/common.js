@@ -91,23 +91,9 @@ function createShellLauncherStyles() {
 }
 
 function addShellLauncherButton() {
-    const navTop = document.querySelector('.nav-top');
-    if (!navTop || document.getElementById('openAudioShellBtn')) return;
-
-    const button = document.createElement('button');
-    button.id = 'openAudioShellBtn';
-    button.type = 'button';
-    button.className = 'open-audio-shell';
-    button.textContent = '🔊 Shell audio';
-    button.title = 'Abrir esta página en modo audio continuo';
-    button.addEventListener('click', () => {
-        const currentPath = window.location.pathname.split('/').pop() || 'inicio.html';
-        const search = window.location.search || '';
-        const hash = window.location.hash || '';
-        window.location.href = `player-shell.html?path=${encodeURIComponent(currentPath + search + hash)}`;
-    });
-
-    navTop.appendChild(button);
+    // Intencionalmente desactivado: el shell se abre automáticamente.
+    // Si en el futuro deseas reactivar el lanzador, elimina este early return.
+    return;
 }
 
 function toggleMenu() {

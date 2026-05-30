@@ -1,208 +1,254 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RobinHub - Shell Continua</title>
-    <style>
-        :root {
-            font-family: 'Segoe UI', sans-serif;
-            background: #f4fdf8;
-            color: #1b8246;
-        }
-        body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
-        header { background: #1b8246; color: white; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-        header .label { font-size: 16px; font-weight: 700; }
-        header .controls { display: flex; align-items: center; gap: 10px; }
-        button { border: none; border-radius: 999px; padding: 10px 14px; font-size: 14px; cursor: pointer; background: white; color: #1b8246; box-shadow: 0 3px 12px rgba(0,0,0,0.12); }
-        button:hover { background: #f1f7f3; }
-        .status { font-size: 14px; opacity: 0.9; }
-        .shell-body { flex: 1; display: grid; grid-template-columns: 1fr; }
-        iframe { width: 100%; height: 100%; border: none; min-height: 0; }
-        .note { font-size: 13px; opacity: 0.85; }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RobinHub — Shell de Reproducción</title>
+  <link rel="stylesheet" href="shared/styles.css">
+  <style>
+    html,body{height:100%;margin:0}
+    #appFrame{width:100%;height:100vh;border:0;display:block}
+    .shell-fallback-controls{
+      position:fixed;right:12px;top:12px;z-index:9999;display:flex;gap:8px;align-items:center;
+      background:rgba(255,255,255,0.9);backdrop-filter:blur(4px);padding:6px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <div>
-            <div class="label">RobinHub Shell</div>
-            <div class="note">Navega dentro de este shell para mantener la música continua.</div>
-        </div>
-        <div class="controls">
-            <button id="playPauseBtn" type="button">▶️ Reproducir</button>
-            <button id="exitShellBtn" type="button">🔙 Página normal</button>
-            <div class="status" id="trackLabel">Chopin - Nocturne Op. 9 No. 2</div>
-        </div>
-    </header>
+  <iframe id="appFrame" src="RobinHub.html" title="RobinHub contenido"></iframe>
 
-    <div class="shell-body">
-        <iframe id="appFrame" src="inicio.html" title="RobinHub contenido"></iframe>
-    </div>
+  <audio id="persistentAudio" preload="auto"></audio>
 
-    <audio id="persistentAudio" preload="auto" style="display:none"></audio>
+  <script>
+    const playlist = [
+      { title: 'Chopin - Nocturne Op. 9 No. 2', src: './Classicals.de - Chopin - Nocturne Op. 9, No. 2 in E-flat major.mp3' },
+      { title: 'Liszt - La campanella', src: './daily_download_20250903_128.mp3' },
+      { title: 'Shostakóvich - Waltz No. 2', src: './Jazz Suite 2 VI Waltz 2.mp3' }
+    ];
+    const storageKey = 'robinShellMusicState';
+    const audio = document.getElementById('persistentAudio');
+    const appFrame = document.getElementById('appFrame');
 
-    <script>
-        const playlist = [
-            { title: 'Chopin - Nocturne Op. 9 No. 2', src: './Classicals.de - Chopin - Nocturne Op. 9, No. 2 in E-flat major.mp3' }
-        ];
-        const storageKey = 'robinShellMusicState';
-        const audio = document.getElementById('persistentAudio');
-        const playPauseBtn = document.getElementById('playPauseBtn');
-        const trackLabel = document.getElementById('trackLabel');
-        const appFrame = document.getElementById('appFrame');
+    let state = { index: 0, time: 0, playing: false };
 
-        let state = { index: 0, time: 0, playing: false };
+    function getInitialPath(){ const p = new URLSearchParams(window.location.search).get('path'); return p || 'RobinHub.html'; }
 
-        function getInitialPath() {
-            const params = new URLSearchParams(window.location.search);
-            const path = params.get('path');
-            if (path) {
-                return path;
-            }
-            return 'inicio.html';
+    function loadState(){ try{ const raw = localStorage.getItem(storageKey); if(!raw) return; const parsed = JSON.parse(raw); if(typeof parsed.index==='number') state.index = Math.min(parsed.index, playlist.length-1); if(typeof parsed.time==='number') state.time = parsed.time; if(typeof parsed.playing==='boolean') state.playing = parsed.playing; }catch{} }
+    function saveState(){ localStorage.setItem(storageKey, JSON.stringify(state)); }
+
+    let trackTicker = null;
+
+    function addScrollStyles(doc){
+      if(!doc || doc.getElementById('shell-scroll-styles')) return;
+      const style = doc.createElement('style');
+      style.id = 'shell-scroll-styles';
+      style.textContent = `
+        @keyframes shellTextScroll {
+          from { transform: translateX(100%); }
+          to { transform: translateX(-100%); }
+        }
+        .shell-track-outer {
+          display: inline-block;
+          overflow: hidden;
+          width: 12ch;
+          white-space: nowrap;
+          position: relative;
+          vertical-align: middle;
+        }
+        .shell-track-inner {
+          display: inline-block;
+          white-space: nowrap;
+          color: white !important;
+          font-weight: 700;
+          animation-iteration-count: infinite;
+          animation-timing-function: linear;
+          will-change: transform;
+        }
+      `;
+      doc.head.appendChild(style);
+    }
+
+    function createTrackText(title){
+      const clean = (title || '').trim();
+      if(clean.length <= 12) return clean;
+      return `${clean} • `;
+    }
+
+    function startTrackTicker(title){
+      const text = createTrackText(title);
+      const doc = getFrameDocument();
+      if(doc){
+        addScrollStyles(doc);
+        const inner = doc.getElementById('shell-track-label');
+        if(inner){
+          inner.textContent = text;
+          if(text.length > 12){
+            const duration = Math.max(18, text.length * 0.35);
+            inner.style.animationName = 'shellTextScroll';
+            inner.style.animationDuration = `${duration}s`;
+            inner.style.animationTimingFunction = 'linear';
+            inner.style.animationIterationCount = 'infinite';
+            inner.style.display = 'inline-block';
+          } else {
+            inner.style.animationName = 'none';
+          }
+        }
+      }
+      if(fallbackEl){
+        const fbLbl = fallbackEl.querySelector('.shell-track');
+        if(fbLbl){
+          fbLbl.textContent = title;
+        }
+      }
+    }
+
+    function updateTrackLabel(){
+      const track = playlist[state.index] || playlist[0];
+      const text = createTrackText(track.title || '');
+      document.title = `Shell — ${track.title}`;
+      const doc = getFrameDocument();
+      if(doc){
+        const inner = doc.getElementById('shell-track-label');
+        if(inner){
+          inner.textContent = text;
+        }
+      }
+      if(fallbackEl){
+        const fbLbl = fallbackEl.querySelector('.shell-track');
+        if(fbLbl){
+          fbLbl.textContent = track.title || '';
+        }
+      }
+    }
+
+    function updateUI(){
+      try{
+        const doc = getFrameDocument();
+        if(doc){
+          const pb = doc.getElementById('shell-play-btn');
+          if(pb) pb.textContent = audio.paused ? '▶️' : '⏸️';
+        }
+      }catch{}
+      if(fallbackEl){
+        const fbBtn = fallbackEl.querySelector('button');
+        if(fbBtn) fbBtn.textContent = audio.paused ? '▶️' : '⏸️';
+      }
+    }
+
+    function setTrack(index, resetTime=true){ state.index = Math.max(0, Math.min(index, playlist.length-1)); if(resetTime) state.time = 0; audio.src = playlist[state.index].src; audio.load(); if(!resetTime && state.time>0) audio.currentTime = Math.min(state.time, audio.duration || state.time); saveState(); startTrackTicker(playlist[state.index]?.title || ''); updateUI(); }
+
+    function playPause(){ if(audio.paused) audio.play().catch(()=>{}); else audio.pause(); }
+
+    audio.addEventListener('play', ()=>{ state.playing = true; saveState(); updateUI(); });
+    audio.addEventListener('pause', ()=>{ state.playing = false; saveState(); updateUI(); });
+    audio.addEventListener('timeupdate', ()=>{ state.time = audio.currentTime; saveState(); });
+    audio.addEventListener('ended', ()=>{ if(state.index < playlist.length - 1){ setTrack(state.index + 1); audio.play().catch(()=>{}); } });
+
+    function getFrameDocument(){ try{ return appFrame.contentDocument || appFrame.contentWindow.document; }catch{return null;} }
+
+    function getFrameLocation(){ try{ const href = appFrame.contentWindow.location.href; const url = new URL(href); return url.pathname.replace(/^\//,'') + url.search + url.hash; }catch{return null;} }
+
+    function interceptLinks(){ const doc = getFrameDocument(); if(!doc || doc.body.dataset.linkInterceptorAttached) return; doc.body.dataset.linkInterceptorAttached = 'true'; doc.addEventListener('click', event=>{ const anchor = event.target.closest('a[href]'); if(!anchor) return; const href = anchor.getAttribute('href'); if(!href) return; if(href.startsWith('mailto:')||href.startsWith('tel:')) return; if(anchor.target && anchor.target !== '_self') return; try{ const base = new URL(appFrame.contentWindow.location.href); const next = new URL(href, base); if(next.origin !== window.location.origin) return; if(!next.pathname.endsWith('.html')) return; event.preventDefault(); const nextPath = next.pathname.replace(/^\//,'') + next.search + next.hash; appFrame.src = nextPath; history.pushState({path: nextPath}, '', '?path=' + encodeURIComponent(nextPath)); }catch(e){} }); }
+
+    function attemptInjectControls(){
+      const doc = getFrameDocument();
+      removeFallbackControls();
+      if(!doc){ createFallbackControls(); return; }
+      try{
+        const navTop = doc.querySelector('.nav-top');
+        if(!navTop){ createFallbackControls(); return; }
+        if(doc.getElementById('shell-controls')) return;
+
+        const controlsWrapper = navTop.querySelector('.controls-wrapper');
+
+        navTop.style.position = 'relative';
+        const ctr = doc.createElement('div');
+        ctr.id = 'shell-controls';
+        ctr.style.cssText = 'position:absolute;left:calc(5% + 220px);top:50%;transform:translateY(-50%);display:flex;gap:10px;align-items:center;';
+
+        const playBtn = doc.createElement('button');
+        playBtn.type = 'button';
+        playBtn.id = 'shell-play-btn';
+        playBtn.style.background = '#1db954';
+        playBtn.style.color = 'white';
+        playBtn.style.border = 'none';
+        playBtn.style.padding = '8px 12px';
+        playBtn.style.borderRadius = '999px';
+        playBtn.style.fontWeight = '700';
+        playBtn.textContent = audio.paused ? '▶️' : '⏸️';
+
+        const trackOuter = doc.createElement('span');
+        trackOuter.className = 'shell-track-outer';
+        trackOuter.style.marginLeft = '8px';
+        trackOuter.style.display = 'inline-block';
+        trackOuter.style.overflow = 'hidden';
+        trackOuter.style.width = '12ch';
+        trackOuter.style.whiteSpace = 'nowrap';
+
+        const trackLabel = doc.createElement('span');
+        trackLabel.id = 'shell-track-label';
+        trackLabel.className = 'shell-track-inner';
+        trackLabel.style.color = 'white';
+        trackLabel.style.display = 'inline-block';
+        trackLabel.style.paddingRight = '1ch';
+        trackLabel.textContent = playlist[state.index]?.title || '';
+
+        trackOuter.appendChild(trackLabel);
+        ctr.appendChild(playBtn);
+        ctr.appendChild(trackOuter);
+
+        if(controlsWrapper){
+          navTop.insertBefore(ctr, controlsWrapper);
+        } else {
+          navTop.appendChild(ctr);
         }
 
-        function loadState() {
-            const raw = localStorage.getItem(storageKey);
-            if (!raw) return;
-            try {
-                const parsed = JSON.parse(raw);
-                if (typeof parsed.index === 'number') state.index = Math.min(parsed.index, playlist.length - 1);
-                if (typeof parsed.time === 'number') state.time = parsed.time;
-                if (typeof parsed.playing === 'boolean') state.playing = parsed.playing;
-            } catch {
-                // ignore
-            }
-        }
+        playBtn.addEventListener('click', ()=>{ playPause(); updateUI(); });
 
-        function saveState() {
-            localStorage.setItem(storageKey, JSON.stringify(state));
-        }
+        audio.addEventListener('play', ()=>{ try{ playBtn.textContent = '⏸️'; }catch{} updateUI(); });
+        audio.addEventListener('pause', ()=>{ try{ playBtn.textContent = '▶️'; }catch{} updateUI(); });
 
-        function updateUI() {
-            const track = playlist[state.index] || playlist[0];
-            trackLabel.textContent = track.title;
-            playPauseBtn.textContent = audio.paused ? '▶️ Reproducir' : '⏸️ Pausar';
-        }
+      }catch(e){ createFallbackControls(); }
+    }
 
-        function setTrack(index, resetTime = true) {
-            state.index = Math.max(0, Math.min(index, playlist.length - 1));
-            if (resetTime) state.time = 0;
-            audio.src = playlist[state.index].src;
-            audio.load();
-            if (!resetTime && state.time > 0) {
-                audio.currentTime = Math.min(state.time, audio.duration || state.time);
-            }
-            saveState();
-            updateUI();
-        }
+    let fallbackEl = null;
+    function createFallbackControls(){
+      if(fallbackEl) return;
+      fallbackEl = document.createElement('div');
+      fallbackEl.className = 'shell-fallback-controls';
+      const b1 = document.createElement('button');
+      b1.type='button';
+      b1.style.background = '#1db954';
+      b1.style.color = 'white';
+      b1.style.border = 'none';
+      b1.style.padding = '6px 10px';
+      b1.style.borderRadius = '6px';
+      b1.textContent = audio.paused ? '▶️' : '⏸️';
+      b1.addEventListener('click', ()=>{ playPause(); updateUI(); });
 
-        function playPause() {
-            if (audio.paused) {
-                audio.play().catch(() => {
-                    // autoplay blocked until user interaction
-                });
-            } else {
-                audio.pause();
-            }
-        }
+      const lbl = document.createElement('span');
+      lbl.className = 'shell-track';
+      lbl.style.marginLeft = '8px';
+      lbl.style.fontWeight = '600';
+      lbl.style.color = 'white';
+      lbl.textContent = playlist[state.index]?.title || '';
 
-        audio.addEventListener('play', () => {
-            state.playing = true;
-            saveState();
-            updateUI();
-        });
+      fallbackEl.appendChild(b1);
+      fallbackEl.appendChild(lbl);
+      document.body.appendChild(fallbackEl);
+      audio.addEventListener('play', ()=>{ if(b1) b1.textContent='⏸️'; updateUI(); });
+      audio.addEventListener('pause', ()=>{ if(b1) b1.textContent='▶️'; updateUI(); });
+    }
+    function removeFallbackControls(){ if(fallbackEl){ try{ fallbackEl.remove(); }catch{} fallbackEl = null; } }
 
-        audio.addEventListener('pause', () => {
-            state.playing = false;
-            saveState();
-            updateUI();
-        });
+    appFrame.addEventListener('load', ()=>{ try{ interceptLinks(); }catch{} attemptInjectControls(); startTrackTicker(playlist[state.index]?.title || ''); updateShellTitle(); });
 
-        audio.addEventListener('timeupdate', () => {
-            state.time = audio.currentTime;
-            saveState();
-        });
+    function updateShellTitle(){ const doc = getFrameDocument(); if(!doc) return; const title = doc.title || 'RobinHub'; document.title = `Shell — ${title}`; }
 
-        playPauseBtn.addEventListener('click', () => {
-            playPause();
-        });
+    window.addEventListener('popstate', event=>{ const path = event.state?.path || getInitialPath(); if(appFrame.src.endsWith(path)) return; appFrame.src = path; });
 
-        function getFrameDocument() {
-            try {
-                return appFrame.contentDocument || appFrame.contentWindow.document;
-            } catch {
-                return null;
-            }
-        }
-
-        function updateShellTitle() {
-            const doc = getFrameDocument();
-            if (!doc) return;
-            const title = doc.title || 'RobinHub';
-            document.title = `Shell — ${title}`;
-        }
-
-        function getFrameLocation() {
-            try {
-                const href = appFrame.contentWindow.location.href;
-                const url = new URL(href);
-                return url.pathname.replace(/^\//, '') + url.search + url.hash;
-            } catch {
-                return null;
-            }
-        }
-
-        function interceptLinks() {
-            const doc = getFrameDocument();
-            if (!doc || doc.body.dataset.linkInterceptorAttached) return;
-            doc.body.dataset.linkInterceptorAttached = 'true';
-
-            doc.addEventListener('click', event => {
-                const anchor = event.target.closest('a[href]');
-                if (!anchor) return;
-                const href = anchor.getAttribute('href');
-                if (!href || href.startsWith('mailto:') || href.startsWith('tel:')) return;
-                if (anchor.target && anchor.target !== '_self') return;
-
-                const base = new URL(appFrame.contentWindow.location.href);
-                const next = new URL(href, base);
-                if (next.origin !== window.location.origin) return;
-                if (!next.pathname.endsWith('.html')) return;
-
-                event.preventDefault();
-                const nextPath = next.pathname.replace(/^\//, '') + next.search + next.hash;
-                appFrame.src = nextPath;
-                history.pushState({ path: nextPath }, '', '?path=' + encodeURIComponent(nextPath));
-            });
-        }
-
-        appFrame.addEventListener('load', () => {
-            interceptLinks();
-            updateShellTitle();
-        });
-
-        window.addEventListener('popstate', event => {
-            const path = event.state?.path || getInitialPath();
-            if (appFrame.src.endsWith(path)) return;
-            appFrame.src = path;
-        });
-
-        const exitShellBtn = document.getElementById('exitShellBtn');
-        exitShellBtn.addEventListener('click', () => {
-            const path = getFrameLocation() || getInitialPath();
-            window.location.href = path;
-        });
-
-        loadState();
-        const initialPath = getInitialPath();
-        appFrame.src = initialPath;
-        history.replaceState({ path: initialPath }, '', '?path=' + encodeURIComponent(initialPath));
-        setTrack(state.index, false);
-        if (state.playing) {
-            audio.play().catch(() => {});
-        }
-        updateUI();
-    </script>
+    loadState(); const initialPath = getInitialPath(); appFrame.src = initialPath; history.replaceState({path: initialPath}, '', '?path=' + encodeURIComponent(initialPath)); setTrack(state.index, false); if(state.playing) audio.play().catch(()=>{}); updateUI();
+    setTimeout(()=>{ attemptInjectControls(); }, 350);
+  </script>
 </body>
 </html>
