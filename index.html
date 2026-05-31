@@ -9,8 +9,41 @@
     html,body{height:100%;margin:0}
     #appFrame{width:100%;height:100vh;border:0;display:block}
     .shell-fallback-controls{
-      position:fixed;right:12px;top:12px;z-index:9999;display:flex;gap:8px;align-items:center;
-      background:rgba(255,255,255,0.9);backdrop-filter:blur(4px);padding:6px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)
+      position:fixed;right:12px;top:12px;z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:flex-start;
+      background:rgba(255,255,255,0.9);backdrop-filter:blur(4px);padding:10px 12px 12px;border-radius:12px;border:1px solid rgba(0,0,0,0.06)
+    }
+    #volumeControl, #shell-volume-control {
+      -webkit-appearance:none;
+      appearance:none;
+      width: 100px;
+      background: rgba(255,255,255,0.3);
+      height: 4px;
+      border-radius: 999px;
+      outline: none;
+      cursor: pointer;
+    }
+    #volumeControl::-webkit-slider-thumb, #shell-volume-control::-webkit-slider-thumb {
+      -webkit-appearance:none;
+      appearance:none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid #1db954;
+      margin-top: -6px;
+    }
+    #volumeControl::-moz-range-thumb, #shell-volume-control::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      border: 2px solid #1db954;
+      cursor: pointer;
+    }
+    #volumeControl::-moz-range-track, #shell-volume-control::-moz-range-track {
+      background: rgba(255,255,255,0.3);
+      height: 4px;
+      border-radius: 999px;
     }
   </style>
 </head>
@@ -21,9 +54,12 @@
 
   <script>
     const playlist = [
+      { title: 'Tchaikovsky - El cascanueces', src: './musica-Tchaikovsky-El-cascanueces-Marcha.mp3' },
       { title: 'Chopin - Nocturne Op. 9 No. 2', src: './Classicals.de - Chopin - Nocturne Op. 9, No. 2 in E-flat major.mp3' },
       { title: 'Liszt - La campanella', src: './daily_download_20250903_128.mp3' },
-      { title: 'Shostakóvich - Waltz No. 2', src: './Jazz Suite 2 VI Waltz 2.mp3' }
+      { title: 'Shostakóvich - Waltz No. 2', src: './Jazz Suite 2 VI Waltz 2.mp3' },
+      { title: 'Tchaikovsky - El lago de los cisnes', src: './musica-Tchaikovsky-El-lago-de-los-cisnes.mp3' },
+      { title: 'Debussy - Clair de lune', src: './Claude Debussy - Clair de lune (From Twilight).mp3' }
     ];
     const storageKey = 'robinShellMusicState';
     const audio = document.getElementById('persistentAudio');
@@ -63,6 +99,40 @@
           animation-iteration-count: infinite;
           animation-timing-function: linear;
           will-change: transform;
+        }
+        #shell-volume-control {
+          -webkit-appearance:none;
+          appearance:none;
+          width: 100%;
+          background: rgba(255,255,255,0.3);
+          height: 4px;
+          border-radius: 999px;
+          outline: none;
+          cursor: pointer;
+          margin-top: 6px;
+        }
+        #shell-volume-control::-webkit-slider-thumb {
+          -webkit-appearance:none;
+          appearance:none;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: white;
+          border: 2px solid #1db954;
+          margin-top: -6px;
+        }
+        #shell-volume-control::-moz-range-thumb {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: white;
+          border: 2px solid #1db954;
+          cursor: pointer;
+        }
+        #shell-volume-control::-moz-range-track {
+          background: rgba(255,255,255,0.3);
+          height: 4px;
+          border-radius: 999px;
         }
       `;
       doc.head.appendChild(style);
@@ -142,7 +212,7 @@
     audio.addEventListener('play', ()=>{ state.playing = true; saveState(); updateUI(); });
     audio.addEventListener('pause', ()=>{ state.playing = false; saveState(); updateUI(); });
     audio.addEventListener('timeupdate', ()=>{ state.time = audio.currentTime; saveState(); });
-    audio.addEventListener('ended', ()=>{ if(state.index < playlist.length - 1){ setTrack(state.index + 1); audio.play().catch(()=>{}); } });
+    audio.addEventListener('ended', ()=>{ const nextIndex = state.index < playlist.length - 1 ? state.index + 1 : 0; setTrack(nextIndex); audio.play().catch(()=>{}); });
 
     function getFrameDocument(){ try{ return appFrame.contentDocument || appFrame.contentWindow.document; }catch{return null;} }
 
@@ -194,8 +264,25 @@
         trackLabel.textContent = playlist[state.index]?.title || '';
 
         trackOuter.appendChild(trackLabel);
+
+        const trackBox = doc.createElement('div');
+        trackBox.style.display = 'flex';
+        trackBox.style.flexDirection = 'column';
+        trackBox.style.alignItems = 'flex-start';
+        trackBox.style.marginLeft = '8px';
+        trackBox.appendChild(trackOuter);
+
+        const volumeControl = doc.createElement('input');
+        volumeControl.type = 'range';
+        volumeControl.id = 'shell-volume-control';
+        volumeControl.min = '0';
+        volumeControl.max = '100';
+        volumeControl.value = '70';
+        volumeControl.addEventListener('input', (e) => { audio.volume = e.target.value / 100; });
+        trackBox.appendChild(volumeControl);
+
         ctr.appendChild(playBtn);
-        ctr.appendChild(trackOuter);
+        ctr.appendChild(trackBox);
 
         if(controlsWrapper){
           navTop.insertBefore(ctr, controlsWrapper);
@@ -233,11 +320,23 @@
       lbl.style.color = 'white';
       lbl.textContent = playlist[state.index]?.title || '';
 
+      const volumeControl = document.createElement('input');
+      volumeControl.type = 'range';
+      volumeControl.id = 'volumeControl';
+      volumeControl.min = '0';
+      volumeControl.max = '100';
+      volumeControl.value = '70';
+      volumeControl.style.marginLeft = '12px';
+      volumeControl.style.cursor = 'pointer';
+      volumeControl.addEventListener('input', (e) => { audio.volume = e.target.value / 100; });
+
       fallbackEl.appendChild(b1);
       fallbackEl.appendChild(lbl);
+      fallbackEl.appendChild(volumeControl);
       document.body.appendChild(fallbackEl);
       audio.addEventListener('play', ()=>{ if(b1) b1.textContent='⏸️'; updateUI(); });
       audio.addEventListener('pause', ()=>{ if(b1) b1.textContent='▶️'; updateUI(); });
+      audio.volume = 0.7;
     }
     function removeFallbackControls(){ if(fallbackEl){ try{ fallbackEl.remove(); }catch{} fallbackEl = null; } }
 
@@ -247,7 +346,7 @@
 
     window.addEventListener('popstate', event=>{ const path = event.state?.path || getInitialPath(); if(appFrame.src.endsWith(path)) return; appFrame.src = path; });
 
-    loadState(); const initialPath = getInitialPath(); appFrame.src = initialPath; history.replaceState({path: initialPath}, '', '?path=' + encodeURIComponent(initialPath)); setTrack(state.index, false); if(state.playing) audio.play().catch(()=>{}); updateUI();
+    audio.volume = 0.7; loadState(); const initialPath = getInitialPath(); appFrame.src = initialPath; history.replaceState({path: initialPath}, '', '?path=' + encodeURIComponent(initialPath)); setTrack(state.index, false); if(state.playing) audio.play().catch(()=>{}); updateUI();
     setTimeout(()=>{ attemptInjectControls(); }, 350);
   </script>
 </body>

@@ -643,6 +643,15 @@
             return;
         }
 
+        const perfilLink = document.getElementById('sidePerfil');
+        if (perfilLink) {
+            perfilLink.href = `perfil.html?uid=${user.uid}`;
+            perfilLink.onclick = (event) => {
+                event.preventDefault();
+                window.location.href = `perfil.html?uid=${user.uid}`;
+            };
+        }
+
         setupSidebar({
             config: menuConfig,
             onPerfil: () => { window.location.href = `perfil.html?uid=${user.uid}`; },
@@ -657,8 +666,13 @@
 
         const targetUid = viewUid || user.uid;
 
-        // Mostrar botón editar solo si es MI perfil
-        if (user.uid === targetUid) document.getElementById("editBtn").style.display = "inline-block";
+        // Mostrar botón editar SOLO si es MI perfil (ocultar en perfiles ajenos)
+        const editBtn = document.getElementById("editBtn");
+        if (user.uid === targetUid) {
+            editBtn.style.display = "inline-block";
+        } else {
+            editBtn.style.display = "none";
+        }
 
         // Cargar datos
         const userDoc = await getDoc(doc(db, "users", targetUid));

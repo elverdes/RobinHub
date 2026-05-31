@@ -372,6 +372,14 @@
             return;
         }
         currentUser = user;
+        const perfilLink = document.getElementById('sidePerfil');
+        if (perfilLink) {
+            perfilLink.href = `perfil.html?uid=${currentUser.uid}`;
+            perfilLink.onclick = (event) => {
+                event.preventDefault();
+                window.location.href = `perfil.html?uid=${currentUser.uid}`;
+            };
+        }
         setupSidebar({
             config: menuConfig,
             onPerfil: () => { window.location.href = `perfil.html?uid=${currentUser.uid}`; },
