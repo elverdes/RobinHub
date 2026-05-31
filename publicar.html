@@ -1233,25 +1233,33 @@
         btn.disabled = true; btn.textContent = "Publicando...";
 
         try {
-            const user = auth.currentUser;
+            const user = currentUser || auth.currentUser;
+            if (!user) {
+                alert('Debes iniciar sesión para publicar una idea.');
+                isSubmitting = false;
+                btn.disabled = false;
+                return;
+            }
+
             let nombreAutor = "Usuario RobinHub";
             const userSnap = await getDoc(doc(db, "users", user.uid));
-            if (userSnap.exists()) nombreAutor = userSnap.data().nombre;
+            if (userSnap.exists()) nombreAutor = userSnap.data().nombre || nombreAutor;
 
             const titleItem = previewState.elements.find(el => el.id === 'title');
             const descriptionItem = previewState.elements.find(el => el.id === 'description');
             const tagsItem = previewState.elements.find(el => el.id === 'tags');
             const imageItem = previewState.elements.find(el => el.id === 'image');
-            const title = titleItem?.content.trim() || '';
-            const description = descriptionItem?.content.trim() || '';
-            const tags = tagsItem?.selected ? tagsItem.selected.map(t => normalizeTagText(t)[0]).filter(Boolean) : [];
+            const title = (titleItem?.content || '').trim();
+            const description = (descriptionItem?.content || '').trim();
+            const tags = Array.isArray(tagsItem?.selected)
+                ? tagsItem.selected.map(t => normalizeTagText(t)[0]).filter(Boolean)
+                : [];
             const image = imageItem?.content || '';
 
             if (!title || !description || !image) {
                 alert('Debe completar título, descripción e imagen en la tarjeta.');
                 isSubmitting = false;
                 btn.disabled = false;
-                btn.textContent = '🚀 Publicar Proyecto';
                 return;
             }
 
@@ -1261,7 +1269,7 @@
                 imagen: image,
                 nombre: nombreAutor,
                 userId: user.uid,
-                tags: tags,
+                tags,
                 likes: 0,
                 likedBy: [],
                 previewLayout: { elements: previewState.elements.map(el => ({ ...el })) },
@@ -1271,8 +1279,9 @@
             window.location.href = "inicio.html";
         } catch (error) {
             console.error(error);
-            alert("Error al publicar.");
-            isSubmitting = false; btn.disabled = false;
+            alert(`Error al publicar: ${error?.message || 'revise la consola del navegador'}`);
+            isSubmitting = false;
+            btn.disabled = false;
         }
     };
 }
