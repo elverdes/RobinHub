@@ -574,6 +574,7 @@
 
     <div class="profile-actions">
         <button id="editBtn" class="btn-edit" onclick="toggleInlineEditMode()">Editar mi perfil</button>
+        <button id="deleteUserBtn" class="btn-danger" style="display:none; margin-left:12px;">Eliminar usuario</button>
         <button id="btnMyProjects" class="btn-folder primary" style="display:none;">📁 <span class="title">Mis proyectos</span></button>
         <button id="btnChats" class="btn-folder chats" style="display:none;">💬 <span class="title">Chats</span></button>
     </div>
@@ -596,9 +597,9 @@
 
 <script type="module">
     import { db, auth } from "./firebase.js";
-    import { addDoc, collection, doc, getDoc, getDocs, orderBy, query, serverTimestamp, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, serverTimestamp, updateDoc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { applySavedTheme, toggleTheme, toggleMenu, toggleSubmenu, loadMenuConfig, setupSidebar, createEditPanel, renderSubmenu } from "./shared/common.js";
+    import { applySavedTheme, toggleTheme, toggleMenu, toggleSubmenu, loadMenuConfig, setupSidebar, createEditPanel, renderSubmenu, isAdminProfile } from "./shared/common.js";
 
     // --- CONSEJOS ALEATORIOS ---
     const tips = [
@@ -665,6 +666,9 @@
         renderMenuConfig();
 
         const targetUid = viewUid || user.uid;
+        const currentUserDoc = await getDoc(doc(db, "users", user.uid));
+        const currentUserProfile = currentUserDoc.exists() ? currentUserDoc.data() : null;
+        const currentUserIsAdmin = isAdminProfile(currentUserProfile);
 
         // Mostrar botón editar SOLO si es MI perfil (ocultar en perfiles ajenos)
         const editBtn = document.getElementById("editBtn");
@@ -672,6 +676,14 @@
             editBtn.style.display = "inline-block";
         } else {
             editBtn.style.display = "none";
+        }
+
+        const deleteUserBtn = document.getElementById("deleteUserBtn");
+        if (deleteUserBtn) {
+            deleteUserBtn.style.display = currentUserIsAdmin ? 'inline-flex' : 'none';
+            deleteUserBtn.onclick = currentUserIsAdmin
+                ? async () => await deleteUser(targetUid, user)
+                : null;
         }
 
         // Cargar datos
@@ -956,6 +968,34 @@
         });
 
         alert('Solicitud aceptada. Se ha creado el chat y estará disponible en tu perfil.');
+    }
+
+    async function deleteUser(targetUid, currentUser) {
+        if (!currentUser) {
+            alert('Necesitas iniciar sesión para eliminar usuarios.');
+            return;
+        }
+        if (!confirm('¿Eliminar este usuario y todos sus proyectos? Esta acción no se puede deshacer.')) return;
+
+        try {
+            const userRef = doc(db, 'users', targetUid);
+            const proyectosQuery = query(collection(db, 'proyectos'), where('userId', '==', targetUid));
+            const proyectosSnap = await getDocs(proyectosQuery);
+
+            const deletePromises = [];
+            proyectosSnap.forEach(proyectoDoc => {
+                deletePromises.push(deleteDoc(doc(db, 'proyectos', proyectoDoc.id)));
+            });
+
+            deletePromises.push(deleteDoc(userRef));
+            await Promise.all(deletePromises);
+
+            alert('Usuario y sus proyectos eliminados correctamente.');
+            window.location.href = 'inicio.html';
+        } catch (error) {
+            console.error(error);
+            alert('Error al eliminar el usuario.');
+        }
     }
 
     async function rejectChatRequest(requestId) {

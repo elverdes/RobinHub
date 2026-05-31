@@ -5,6 +5,19 @@ const defaultMenuConfig = [
     { id: 'more', label: '⚙️ Más ajustes', visible: true, lock: true }
 ];
 
+const ADMIN_EMAIL = 'robinhub@robinhub.com';
+const ADMIN_NAME = 'RobinHub';
+
+function isAdminProfile(profile) {
+    return profile?.role === 'admin' || profile?.nombre === ADMIN_NAME;
+}
+
+function getRegistrationRole(nombre, email) {
+    const normalizedName = String(nombre || '').trim();
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    return normalizedName === ADMIN_NAME && normalizedEmail === ADMIN_EMAIL ? 'admin' : 'user';
+}
+
 function loadMenuConfig() {
     const raw = localStorage.getItem('robinMenuConfig');
     let parsed;
@@ -243,5 +256,7 @@ export {
     closeMenu,
     renderSubmenu,
     setupSidebar,
-    createEditPanel
+    createEditPanel,
+    isAdminProfile,
+    getRegistrationRole
 };

@@ -158,6 +158,7 @@
         import { auth, db } from "./firebase.js";
         import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getRegistrationRole } from "./shared/common.js";
 
         let fotoBase64 = "";
         let cvBase64 = "";
@@ -382,6 +383,7 @@
                     uid: user.uid,
                     nombre,
                     email,
+                    role: getRegistrationRole(nombre, email),
                     bio: document.getElementById("bio").value || "",
                     foto: fotoBase64 || "https://ui-avatars.com/api/?name=" + encodeURIComponent(nombre),
                     

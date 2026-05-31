@@ -116,6 +116,8 @@
         .btn-like { background: white; border: 2.5px solid #ff4757; color: #ff4757; padding: 14px 40px; border-radius: 35px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; font-size: 16px; }
         .btn-like:hover { transform: scale(1.05); }
         .btn-like.active { background: #ff4757; color: white; box-shadow: 0 8px 20px rgba(255, 71, 87, 0.3); }
+        .btn-danger { background: #ff4757; color: white; border: none; padding: 14px 24px; border-radius: 35px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .btn-danger:hover { transform: scale(1.03); background: #e84148; }
 
         .more-section { max-width: 1000px; margin: 60px auto; padding: 0 20px; }
         .more-section h3 { border-left: 6px solid var(--primary); padding-left: 15px; color: #1b5e20; margin-bottom: 25px; font-size: 24px; }
@@ -279,6 +281,7 @@
         <button id="dynamicLikeBtn" class="btn-like">
             <span id="dynamicLikeIcon" style="font-size:20px">🤍</span> <span id="dynamicLikesCount">0</span> Likes
         </button>
+        <button id="dynamicDeleteProjectBtn" class="btn-danger" style="display:none;">Eliminar</button>
         <div style="font-size: 20px; color: #555; font-weight: bold;">👁️ <span id="dynamicVisitasCount">0</span> <span style="font-size: 14px; color: #888;">Visualizaciones</span></div>
     </div>
 </div>
@@ -304,6 +307,7 @@
                 <span id="likeIcon" style="font-size:20px">🤍</span> <span id="likesCount">0</span> Likes
             </button>
             <button id="requestChatBtn" class="btn-chat" style="display:none;">Solicitar chat</button>
+            <button id="deleteProjectBtn" class="btn-danger" style="display:none; margin-left: 12px;">Eliminar</button>
             <div style="font-size: 20px; color: #555; font-weight: bold;">👁️ <span id="visitasCount">0</span> <span style="font-size: 14px; color: #888;">Visualizaciones</span></div>
         </div>
     </div>
@@ -319,9 +323,9 @@
 
 <script type="module">
     import { db, auth } from "./firebase.js";
-    import { addDoc, collection, doc, getDoc, getDocs, increment, onSnapshot, query, serverTimestamp, updateDoc, where, limit, arrayRemove, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, increment, onSnapshot, query, serverTimestamp, updateDoc, where, limit, arrayRemove, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { applySavedTheme, toggleTheme, toggleMenu, toggleSubmenu, loadMenuConfig, setupSidebar, createEditPanel, renderSubmenu } from "./shared/common.js";
+    import { applySavedTheme, toggleTheme, toggleMenu, toggleSubmenu, loadMenuConfig, setupSidebar, createEditPanel, renderSubmenu, isAdminProfile } from "./shared/common.js";
 
     // --- CONSEJOS ALEATORIOS ---
     const tips = [
@@ -361,17 +365,20 @@
     if(!projectId) window.location.href = "inicio.html";
 
     let currentUser = null;
+    let currentUserIsAdmin = false;
     let projectOwnerId = null;
     let projectTitle = "";
 
     const docRef = doc(db, "proyectos", projectId);
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
         if (!user) {
             window.location.href = 'login.html';
             return;
         }
         currentUser = user;
+        const currentUserDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        currentUserIsAdmin = isAdminProfile(currentUserDoc.exists() ? currentUserDoc.data() : null);
         const perfilLink = document.getElementById('sidePerfil');
         if (perfilLink) {
             perfilLink.href = `perfil.html?uid=${currentUser.uid}`;
@@ -392,6 +399,7 @@
         });
         renderMenuConfig();
         updateRequestChatButton();
+        updateOwnerActions();
     });
 
     // Sumar visita una sola vez al cargar
@@ -420,6 +428,7 @@
         projectOwnerId = data.userId;
         projectTitle = data.titulo || '';
         updateRequestChatButton();
+        updateOwnerActions();
 
         // Renderizar Tags
         const tagsBox = document.getElementById("p-tags");
@@ -584,6 +593,36 @@
         }
         btn.style.display = 'inline-flex';
         btn.disabled = false;
+    }
+
+    function updateOwnerActions() {
+        const deleteBtn = document.getElementById("deleteProjectBtn");
+        const dynamicDeleteBtn = document.getElementById("dynamicDeleteProjectBtn");
+        const isOwner = currentUser && projectOwnerId && currentUser.uid === projectOwnerId;
+        const canDelete = isOwner || currentUserIsAdmin;
+        const displayStyle = canDelete ? 'inline-flex' : 'none';
+
+        if (deleteBtn) {
+            deleteBtn.style.display = displayStyle;
+            deleteBtn.onclick = canDelete ? deleteProject : null;
+        }
+        if (dynamicDeleteBtn) {
+            dynamicDeleteBtn.style.display = displayStyle;
+            dynamicDeleteBtn.onclick = canDelete ? deleteProject : null;
+        }
+    }
+
+    async function deleteProject() {
+        if (!currentUser || !(currentUser.uid === projectOwnerId || currentUserIsAdmin)) return;
+        if (!confirm('¿Eliminar este proyecto permanentemente?')) return;
+        try {
+            await deleteDoc(docRef);
+            alert('Proyecto eliminado.');
+            window.location.href = 'inicio.html';
+        } catch (error) {
+            console.error(error);
+            alert('Error al eliminar el proyecto.');
+        }
     }
 
     async function requestChatForProject() {
