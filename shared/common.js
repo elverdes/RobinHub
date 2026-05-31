@@ -5,8 +5,121 @@ const defaultMenuConfig = [
     { id: 'more', label: '⚙️ Más ajustes', visible: true, lock: true }
 ];
 
+import { collection, getDocs, limit, onSnapshot, orderBy, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 const ADMIN_EMAIL = 'robinhub@robinhub.com';
 const ADMIN_NAME = 'RobinHub';
+const NOTIFICATION_SOUND_SRC = 'flecha_disparada.mp3';
+const notificationAudio = new Audio(NOTIFICATION_SOUND_SRC);
+notificationAudio.volume = 0.7;
+let notificationContainer = null;
+let notificationState = {
+    chatRequestsReady: false,
+    chatsReady: false,
+    listeners: {
+        chatRequests: null,
+        chats: null
+    },
+    chatTimestamps: {}
+};
+
+function createNotificationContainer() {
+    if (notificationContainer) return notificationContainer;
+    notificationContainer = document.createElement('div');
+    notificationContainer.id = 'notification-container';
+    notificationContainer.style.cssText = 'position: fixed; right: 20px; bottom: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; pointer-events: none;';
+    document.body.appendChild(notificationContainer);
+    return notificationContainer;
+}
+
+function showNotification(title, message, { duration = 4500, sound = true } = {}) {
+    const container = createNotificationContainer();
+    const notification = document.createElement('div');
+    notification.style.cssText = 'pointer-events:auto; min-width: 260px; max-width: 320px; background: rgba(27, 130, 70, 0.95); color: white; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.18); padding: 14px 18px; font-family: sans-serif; opacity: 0; transform: translateY(20px); transition: transform 0.25s ease, opacity 0.25s ease;';
+    notification.innerHTML = `<strong style="display:block; margin-bottom:6px;">${title}</strong><span style="font-size:14px; line-height:1.4;">${message}</span>`;
+    container.appendChild(notification);
+    requestAnimationFrame(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateY(0)';
+    });
+    if (sound) {
+        try {
+            notificationAudio.currentTime = 0;
+            notificationAudio.play().catch(() => {});
+        } catch {}
+    }
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(20px)';
+        setTimeout(() => notification.remove(), 260);
+    }, duration);
+}
+
+function playClickSound() {
+    try {
+        notificationAudio.currentTime = 0;
+        notificationAudio.play().catch(() => {});
+    } catch {}
+}
+
+function startRealtimeNotificationListeners(db, currentUserUid) {
+    if (!db || !currentUserUid) return;
+    if (notificationState.listeners.chatRequests || notificationState.listeners.chats) return;
+
+    const requestsQuery = query(
+        collection(db, 'chatRequests'),
+        where('toUid', '==', currentUserUid),
+        where('status', '==', 'pending')
+    );
+
+    notificationState.listeners.chatRequests = onSnapshot(requestsQuery, (snapshot) => {
+        if (!notificationState.chatRequestsReady) {
+            notificationState.chatRequestsReady = true;
+            return;
+        }
+        snapshot.docChanges().forEach((change) => {
+            if (change.type === 'added') {
+                showNotification('Solicitud de chat', 'Has recibido una nueva solicitud de chat.');
+            }
+        });
+    });
+
+    const chatsQuery = query(
+        collection(db, 'chats'),
+        where('participants', 'array-contains', currentUserUid)
+    );
+
+    notificationState.listeners.chats = onSnapshot(chatsQuery, async (snapshot) => {
+        if (!notificationState.chatsReady) {
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                notificationState.chatTimestamps[docSnap.id] = data.lastMessageAt?.toMillis() || 0;
+            });
+            notificationState.chatsReady = true;
+            return;
+        }
+
+        snapshot.docChanges().forEach(async (change) => {
+            const chatId = change.doc.id;
+            const data = change.doc.data();
+            const previous = notificationState.chatTimestamps[chatId] || 0;
+            const current = data.lastMessageAt?.toMillis() || 0;
+            notificationState.chatTimestamps[chatId] = current;
+            if (change.type === 'modified' && current > previous) {
+                const messagesQuery = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'desc'), limit(1));
+                try {
+                    const latestSnap = await getDocs(messagesQuery);
+                    if (!latestSnap.empty) {
+                        const latest = latestSnap.docs[0].data();
+                        if (latest.senderId !== currentUserUid) {
+                            showNotification('Nuevo mensaje', 'Has recibido un nuevo mensaje en el chat.');
+                        }
+                    }
+                } catch {}
+            }
+        });
+    });
+}
 
 function isAdminProfile(profile) {
     return profile?.role === 'admin' || profile?.nombre === ADMIN_NAME;
@@ -111,6 +224,7 @@ function addShellLauncherButton() {
 
 function toggleMenu() {
     document.getElementById('bodyTag')?.classList.toggle('menu-open');
+    playClickSound();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -258,5 +372,8 @@ export {
     setupSidebar,
     createEditPanel,
     isAdminProfile,
-    getRegistrationRole
+    getRegistrationRole,
+    showNotification,
+    startRealtimeNotificationListeners,
+    playClickSound
 };

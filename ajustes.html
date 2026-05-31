@@ -56,6 +56,8 @@
         }
 
         .consejo-texto { color: var(--primary); font-size: 15px; font-weight: 600; font-style: italic; }
+        .consejo-bird { display: inline-flex; align-items: center; gap: 10px; }
+        .consejo-bird-img { width: 42px; height: 42px; max-width: 42px; max-height: 42px; object-fit: contain; border-radius: 50%; box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
 
         /* --- CONTENEDOR --- */
         .settings-container {
@@ -259,7 +261,10 @@
     </div>
     <div class="nav-bottom">
         <div><span class="brand-text-bottom">obinHub</span></div>
-        <div class="consejo-texto" id="randomTip">Personaliza tu experiencia...</div>
+        <div class="consejo-bird">
+            <img src="pajaro.png" alt="Pájaro" class="consejo-bird-img">
+            <span class="consejo-texto" id="randomTip">Personaliza tu experiencia...</span>
+        </div>
     </div>
 </header>
 

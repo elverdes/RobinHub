@@ -64,6 +64,8 @@
         }
 
         .consejo-texto { color: var(--primary); font-size: 15px; font-weight: 600; font-style: italic; }
+        .consejo-bird { display: inline-flex; align-items: center; gap: 10px; }
+        .consejo-bird-img { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
 
         .editor-toolbar { display: flex; gap: 8px; }
         .editor-toolbar button { width: 40px; height: 40px; border: none; border-radius: 8px; background: rgba(255,255,255,0.1); color: white; font-size: 18px; cursor: pointer; transition: 0.3s; }
@@ -369,7 +371,7 @@
     import { db, auth } from "./firebase.js";
     import { collection, addDoc, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { applySavedTheme, toggleTheme, toggleMenu, toggleSubmenu, loadMenuConfig, setupSidebar, createEditPanel, renderSubmenu } from "./shared/common.js";
+    import { applySavedTheme, toggleTheme, toggleMenu, toggleSubmenu, loadMenuConfig, setupSidebar, createEditPanel, renderSubmenu, startRealtimeNotificationListeners } from "./shared/common.js";
 
     // --- CONSEJOS ALEATORIOS ---
     const tips = [
@@ -432,6 +434,7 @@
             onMore: () => window.location.href = 'ajustes.html'
         });
         renderMenuConfig();
+        startRealtimeNotificationListeners(db, currentUser.uid);
     });
 
     let base64 = "";

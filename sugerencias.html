@@ -55,6 +55,8 @@
         }
 
         .consejo-texto { color: var(--primary); font-size: 15px; font-weight: 600; font-style: italic; }
+        .consejo-bird { display: inline-flex; align-items: center; gap: 10px; }
+        .consejo-bird-img { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
 
         /* --- LOGO SAGRADO --- */
         .header-left { position: relative; display: flex; align-items: center; }
@@ -130,6 +132,9 @@
             font-size: 18px; transition: 0.2s;
         }
         .btn-like:hover { background: var(--accent); color: white; }
+        .btn-like.active {
+            background: var(--primary); color: white;
+        }
         .like-count { font-weight: 800; color: var(--primary); margin-top: 5px; display: block; }
 
         .edit-panel {
@@ -241,8 +246,10 @@
     </div>
     <div class="nav-bottom">
         <div><span class="brand-text-bottom">obinHub</span></div>
-        <div class="consejo-texto" id="randomTip">Tus ideas mejoran el bosque...</div>
-    </div>
+            <div class="consejo-bird">
+                <img src="pajaro.png" alt="Pájaro" class="consejo-bird-img">
+                <div class="consejo-texto" id="randomTip">Tus ideas mejoran el bosque...</div>
+            </div>
 </header>
 
 <div id="mySidebar" class="sidebar">
@@ -262,6 +269,10 @@
     <div class="input-box">
         <h3 style="color: var(--primary); margin-top: 0;">💡 ¿Cómo podemos mejorar RobinHub?</h3>
         <textarea id="sugerenciaInput" rows="3" placeholder="Escribe tu idea para mejorar la plataforma..."></textarea>
+        <div class="publish-options" style="margin:16px 0; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+            <label style="font-size:14px; color:var(--text-secondary);"><input type="radio" name="visibilityOption" value="publico" checked style="margin-right:6px;"> Público</label>
+            <label style="font-size:14px; color:var(--text-secondary);"><input type="radio" name="visibilityOption" value="anonimo" style="margin-right:6px;"> Anónimo</label>
+        </div>
         <button class="btn-send" id="sendBtn">Publicar Sugerencia</button>
     </div>
 
@@ -271,9 +282,9 @@
 
 <script type="module">
     import { db, auth } from "./firebase.js";
-    import { collection, addDoc, onSnapshot, updateDoc, doc, increment, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { collection, addDoc, onSnapshot, updateDoc, doc, getDoc, deleteDoc, increment, query, orderBy, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { applySavedTheme, toggleTheme, toggleMenu, toggleSubmenu, loadMenuConfig, setupSidebar, createEditPanel, renderSubmenu } from "./shared/common.js";
+    import { applySavedTheme, toggleTheme, toggleMenu, toggleSubmenu, loadMenuConfig, setupSidebar, createEditPanel, renderSubmenu, isAdminProfile, startRealtimeNotificationListeners } from "./shared/common.js";
 
     // --- CONSEJOS ALEATORIOS ---
     const tips = [
@@ -310,13 +321,41 @@
     renderMenuConfig();
 
     let currentUser = null;
+    let currentUserProfile = null;
+    let currentUserIsAdmin = false;
+    let suggestionsListener = null;
+    const userNameCache = {};
 
-    onAuthStateChanged(auth, (user) => {
+    async function getUserName(uid, fallback) {
+        if (!uid) return fallback || 'Usuario';
+        if (userNameCache[uid]) return userNameCache[uid];
+        try {
+            const userDoc = await getDoc(doc(db, 'users', uid));
+            if (userDoc.exists()) {
+                const name = userDoc.data().nombre || fallback || 'Usuario';
+                userNameCache[uid] = name;
+                return name;
+            }
+        } catch {
+        }
+        return fallback || 'Usuario';
+    }
+
+    onAuthStateChanged(auth, async (user) => {
         if (!user) {
             window.location.href = "login.html";
             return;
         }
         currentUser = user;
+        try {
+            const currentProfileDoc = await getDoc(doc(db, 'users', currentUser.uid));
+            currentUserProfile = currentProfileDoc.exists() ? currentProfileDoc.data() : null;
+            currentUserIsAdmin = isAdminProfile(currentUserProfile);
+        } catch {
+            currentUserProfile = null;
+            currentUserIsAdmin = false;
+        }
+
         const perfilLink = document.getElementById('sidePerfil');
         if (perfilLink) {
             perfilLink.href = `perfil.html?uid=${currentUser.uid}`;
@@ -336,54 +375,98 @@
             onMore: () => window.location.href = 'ajustes.html'
         });
         renderMenuConfig();
+        startRealtimeNotificationListeners(db, currentUser.uid);
+        if (!suggestionsListener) {
+            suggestionsListener = listenSuggestions();
+        }
     });
+
+    async function listenSuggestions() {
+        const q = query(collection(db, "sugerencias"), orderBy("likes", "desc"));
+        return onSnapshot(q, (snapshot) => {
+            const lista = document.getElementById("listaSugerencias");
+            lista.innerHTML = "";
+
+            snapshot.forEach((sdoc) => {
+                const s = sdoc.data();
+                const likedBy = Array.isArray(s.likedBy) ? s.likedBy : [];
+                const alreadyLiked = currentUser && likedBy.includes(currentUser.uid);
+                const authorLabel = s.anonimo ? 'de: anónimo' : `@${s.autorName || 'Cargando...'} dice:`;
+                const isAdmin = currentUserIsAdmin;
+                const card = document.createElement("div");
+                card.className = "sugerencia-card";
+                card.innerHTML = `
+                    <div>
+                        <span class="sugerencia-user">${authorLabel}</span>
+                        <div class="sugerencia-text">${s.texto}</div>
+                    </div>
+                    <div class="like-box" style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
+                        <button class="btn-like ${alreadyLiked ? 'active' : ''}" onclick="darLike('${sdoc.id}')">👍</button>
+                        <span class="like-count">${s.likes || 0}</span>
+                        ${isAdmin ? `<button class="btn-like" style="margin-top:6px;background:#ff4757;color:white;" onclick="deleteSuggestion('${sdoc.id}')">Eliminar</button>` : ''}
+                    </div>
+                `;
+                lista.appendChild(card);
+
+                if (!s.anonimo) {
+                    getUserName(s.userId, s.autorName || 'Usuario').then((name) => {
+                        const label = card.querySelector('.sugerencia-user');
+                        if (label) label.textContent = `@${name} dice:`;
+                    });
+                }
+            });
+        });
+    }
 
     // Publicar sugerencia
     document.getElementById("sendBtn").onclick = async () => {
         const texto = document.getElementById("sugerenciaInput").value.trim();
         if (!texto) return;
 
+        const option = document.querySelector('input[name="visibilityOption"]:checked')?.value || 'publico';
+        let autorNombre = currentUser.displayName || '';
+        try {
+            const perfil = await getDoc(doc(db, 'users', currentUser.uid));
+            if (perfil.exists()) {
+                autorNombre = perfil.data().nombre || autorNombre || currentUser.email?.split('@')[0] || 'Usuario';
+            }
+        } catch {}
+
         await addDoc(collection(db, "sugerencias"), {
             texto: texto,
-            autor: currentUser.displayName || "Anónimo",
+            autorName: autorNombre,
+            anonimo: option === 'anonimo',
             userId: currentUser.uid,
             likes: 0,
+            likedBy: [],
             fecha: new Date()
         });
 
         document.getElementById("sugerenciaInput").value = "";
     };
 
-    // Escuchar sugerencias ordenadas por likes
-    const q = query(collection(db, "sugerencias"), orderBy("likes", "desc"));
-    onSnapshot(q, (snapshot) => {
-        const lista = document.getElementById("listaSugerencias");
-        lista.innerHTML = "";
-
-        snapshot.forEach((sdoc) => {
-            const s = sdoc.data();
-            const card = document.createElement("div");
-            card.className = "sugerencia-card";
-            card.innerHTML = `
-                <div>
-                    <span class="sugerencia-user">@${s.autor} dice:</span>
-                    <div class="sugerencia-text">${s.texto}</div>
-                </div>
-                <div class="like-box">
-                    <button class="btn-like" onclick="darLike('${sdoc.id}')">👍</button>
-                    <span class="like-count">${s.likes}</span>
-                </div>
-            `;
-            lista.appendChild(card);
-        });
-    });
-
-    // Función global para el Like
+    // Función global para el Like/Unlike
     window.darLike = async (id) => {
+        if (!currentUser) {
+            window.location.href = 'login.html';
+            return;
+        }
         const sRef = doc(db, "sugerencias", id);
+        const snapshot = await getDoc(sRef);
+        if (!snapshot.exists()) return;
+        const data = snapshot.data();
+        const likedBy = Array.isArray(data.likedBy) ? data.likedBy : [];
+        const alreadyLiked = likedBy.includes(currentUser.uid);
         await updateDoc(sRef, {
-            likes: increment(1)
+            likes: increment(alreadyLiked ? -1 : 1),
+            likedBy: alreadyLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid)
         });
+    };
+
+    window.deleteSuggestion = async (id) => {
+        if (!currentUserIsAdmin) return;
+        if (!confirm('¿Eliminar esta sugerencia permanentemente?')) return;
+        await deleteDoc(doc(db, 'sugerencias', id));
     };
 </script>
 

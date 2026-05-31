@@ -13,6 +13,8 @@
         .card-content { padding: 25px; }
         .tag { display: inline-block; background: var(--light-green); color: var(--primary); font-size: 11px; padding: 3px 10px; border-radius: 15px; font-weight: bold; margin: 5px 5px 0 0; }
         .user-card { background: var(--bg-card); border-radius: 30px; padding: 20px; text-align: center; border: 2px solid var(--primary); transition: 0.3s; cursor: pointer; color: var(--text-main); }
+        .consejo-bird { display: inline-flex; align-items: center; gap: 10px; }
+        .consejo-bird-img { width: 42px; height: 42px; object-fit: contain; border-radius: 50%; box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
 
         /* MEDIA QUERIES - RESPONSIVE */
         @media (max-width: 768px) {
@@ -79,7 +81,10 @@
         </div>
         <div class="nav-bottom">
             <div><span class="brand-text-bottom">obinHub</span></div>
-            <div class="consejo-texto" id="randomTip">Cargando saberes del bosque...</div>
+            <div class="consejo-bird">
+                <img src="pajaro.png" alt="Pájaro" class="consejo-bird-img">
+                <div class="consejo-texto" id="randomTip">Cargando saberes del bosque...</div>
+            </div>
         </div>
     </header>
 
@@ -89,7 +94,7 @@
         import { db, auth } from "./firebase.js";
         import { addDoc, collection, doc, getDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { applySavedTheme, toggleTheme, toggleMenu, toggleSubmenu, loadMenuConfig, setupSidebar, createEditPanel, renderSubmenu } from "./shared/common.js";
+        import { applySavedTheme, toggleTheme, toggleMenu, toggleSubmenu, loadMenuConfig, setupSidebar, createEditPanel, renderSubmenu, startRealtimeNotificationListeners } from "./shared/common.js";
 
         const tips = [
             "¿Sabías que puedes buscar por #etiquetas?",
@@ -179,6 +184,7 @@
                 onMore: () => window.location.href = 'ajustes.html'
             });
             renderMenuConfig();
+            startRealtimeNotificationListeners(db, currentUser.uid);
             render();
         });
 
